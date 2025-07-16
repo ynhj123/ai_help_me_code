@@ -11,6 +11,11 @@ import com.admin.modules.auth.enums.UserStatus;
 import com.admin.modules.auth.enums.UserType;
 import com.admin.modules.auth.repository.RoleRepository;
 import com.admin.modules.auth.repository.UserRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +34,7 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/auth")
+@Tag(name = "Authentication", description = "用户认证相关接口")
 public class AuthController {
 
     @Autowired
@@ -47,6 +53,9 @@ public class AuthController {
     JwtUtils jwtUtils;
 
     @PostMapping("/signin")
+    @Operation(summary = "用户登录", description = "用户登录接口，返回JWT令牌")
+    @ApiResponse(responseCode = "200", description = "登录成功",
+                content = @Content(schema = @Schema(implementation = JwtResponse.class)))
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
 
         Authentication authentication = authenticationManager.authenticate(
@@ -69,6 +78,8 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
+    @Operation(summary = "用户注册", description = "新用户注册接口")
+    @ApiResponse(responseCode = "200", description = "注册成功")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
         if (userRepository.existsByUsername(signUpRequest.getUsername())) {
             return ResponseEntity.badRequest().body("Error: Username is already taken!");
