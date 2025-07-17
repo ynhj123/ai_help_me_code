@@ -1,0 +1,420 @@
+/* 响应式设计样式表 */
+
+/* 基础响应式变量 */
+:root {
+  --mobile-breakpoint: 768px;
+  --tablet-breakpoint: 1024px;
+  --desktop-breakpoint: 1200px;
+}
+
+/* 移动端优先的响应式设计 */
+
+/* 超小屏幕 (手机) */
+@media (max-width: 576px) {
+  /* 布局调整 */
+  .layout-container {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -280px;
+    width: 280px;
+    height: 100vh;
+    z-index: 1000;
+    transition: left 0.3s ease;
+    background: #fff;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .sidebar.open {
+    left: 0;
+  }
+
+  .main-content {
+    margin-left: 0;
+    padding: 16px;
+    width: 100%;
+  }
+
+  .header {
+    padding: 12px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  /* 表格响应式 */
+  .responsive-table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .responsive-table table {
+    min-width: 600px;
+  }
+
+  /* 卡片布局 */
+  .card-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  /* 按钮组 */
+  .button-group {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .button-group .ant-btn {
+    width: 100%;
+    margin: 0;
+  }
+
+  /* 表单布局 */
+  .form-container {
+    padding: 16px;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* 统计卡片 */
+  .stats-card {
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  /* 模态框 */
+  .ant-modal {
+    max-width: 95vw;
+    margin: 16px auto;
+  }
+
+  /* 搜索栏 */
+  .search-bar {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .search-bar .ant-input,
+  .search-bar .ant-select,
+  .search-bar .ant-btn {
+    width: 100%;
+  }
+
+  /* 面包屑 */
+  .breadcrumb-container {
+    padding: 8px 16px;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  /* 分页 */
+  .pagination-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* 侧边栏遮罩 */
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+  }
+
+  /* 移动端菜单按钮 */
+  .mobile-menu-button {
+    display: block;
+    position: absolute;
+    top: 12px;
+    left: 16px;
+    z-index: 1001;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+  }
+
+  /* 隐藏桌面端元素 */
+  .desktop-only {
+    display: none !important;
+  }
+}
+
+/* 小屏幕 (平板竖屏) */
+@media (min-width: 577px) and (max-width: 768px) {
+  .sidebar {
+    width: 200px;
+  }
+
+  .main-content {
+    margin-left: 200px;
+    padding: 20px;
+  }
+
+  .card-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 20px;
+  }
+}
+
+/* 中等屏幕 (平板横屏) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .sidebar {
+    width: 220px;
+  }
+
+  .main-content {
+    margin-left: 220px;
+    padding: 24px;
+  }
+
+  .card-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  .form-row {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 24px;
+  }
+
+  .form-col {
+    flex: 1 1 calc(50% - 12px);
+    min-width: 250px;
+  }
+}
+
+/* 大屏幕 (桌面) */
+@media (min-width: 1025px) {
+  .sidebar {
+    width: 250px;
+  }
+
+  .main-content {
+    margin-left: 250px;
+    padding: 24px;
+  }
+
+  .card-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+
+  .form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+  }
+
+  .form-col {
+    flex: 1 1 calc(33.333% - 16px);
+    min-width: 250px;
+  }
+
+  .mobile-menu-button,
+  .sidebar-overlay {
+    display: none !important;
+  }
+
+  .mobile-only {
+    display: none !important;
+  }
+}
+
+/* 超大屏幕 */
+@media (min-width: 1400px) {
+  .main-content {
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .card-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* 响应式工具类 */
+.mobile-only {
+  display: none;
+}
+
+.desktop-only {
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .mobile-only {
+    display: block;
+  }
+
+  .desktop-only {
+    display: none;
+  }
+}
+
+/* 响应式字体大小 */
+.responsive-text {
+  font-size: 14px;
+}
+
+@media (max-width: 576px) {
+  .responsive-text {
+    font-size: 12px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .responsive-text {
+    font-size: 16px;
+  }
+}
+
+/* 响应式间距 */
+.responsive-padding {
+  padding: 16px;
+}
+
+@media (max-width: 576px) {
+  .responsive-padding {
+    padding: 12px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .responsive-padding {
+    padding: 24px;
+  }
+}
+
+/* 响应式图片 */
+.responsive-image {
+  max-width: 100%;
+  height: auto;
+}
+
+/* 响应式表格 */
+.responsive-table-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 响应式卡片 */
+.responsive-card {
+  margin-bottom: 16px;
+}
+
+@media (max-width: 576px) {
+  .responsive-card {
+    margin-bottom: 12px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .responsive-card {
+    margin-bottom: 24px;
+  }
+}
+
+/* 响应式按钮 */
+.responsive-button {
+  min-height: 32px;
+  padding: 4px 12px;
+  font-size: 14px;
+}
+
+@media (max-width: 576px) {
+  .responsive-button {
+    min-height: 36px;
+    padding: 6px 16px;
+    font-size: 16px;
+  }
+}
+
+/* 响应式导航 */
+.responsive-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (max-width: 576px) {
+  .responsive-nav {
+    flex-direction: column;
+  }
+}
+
+/* 响应式网格布局 */
+.responsive-grid {
+  display: grid;
+  gap: 16px;
+}
+
+@media (max-width: 576px) {
+  .responsive-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 577px) and (max-width: 768px) {
+  .responsive-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .responsive-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1025px) {
+  .responsive-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+}
