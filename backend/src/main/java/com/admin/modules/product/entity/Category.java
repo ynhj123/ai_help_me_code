@@ -43,9 +43,17 @@ public class Category extends BaseEntity {
     @Column(nullable = false)
     private Boolean isActive = true;
     
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private CategoryStatus status = CategoryStatus.ACTIVE;
+    
     @Column(length = 500)
     private String imageUrl;
     
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
     private List<Product> products = new ArrayList<>();
+    
+    public enum CategoryStatus {
+        ACTIVE, INACTIVE
+    }
 }

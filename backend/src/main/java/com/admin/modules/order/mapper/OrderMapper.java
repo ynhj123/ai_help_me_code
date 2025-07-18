@@ -14,8 +14,6 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface OrderMapper {
     
-    @Mapping(target = "userName", source = "user.username")
-    @Mapping(target = "userPhone", source = "user.phone")
     OrderDto toDto(Order order);
     
     OrderItemDto toItemDto(OrderItem item);

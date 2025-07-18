@@ -57,7 +57,7 @@ public class AuthService {
                     new UsernamePasswordAuthenticationToken(username, loginRequest.getPassword()));
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            String jwt = jwtUtils.generateJwtToken(authentication);
+            String jwt = jwtUtils.generateJwtToken((UserDetails) authentication.getPrincipal());
 
             // 登录成功，清除失败记录
             bruteForceProtectionService.loginSucceeded(username, ip);
@@ -86,28 +86,28 @@ public class AuthService {
                            signUpRequest.getEmail(),
                            encoder.encode(signUpRequest.getPassword()));
 
-        Set<String> strRoles = signUpRequest.getRole();
+        Set<String> strRoles = signUpRequest.getRoles();
         Set<Role> roles = new HashSet<>();
 
         if (strRoles == null) {
-            Role userRole = roleRepository.findByName(RoleName.ROLE_USER)
+            Role userRole = roleRepository.findByCode("ROLE_USER")
                     .orElseThrow(() -> new RuntimeException("用户角色未找到"));
             roles.add(userRole);
         } else {
             strRoles.forEach(role -> {
                 switch (role) {
                     case "admin":
-                        Role adminRole = roleRepository.findByName(RoleName.ROLE_ADMIN)
+                        Role adminRole = roleRepository.findByCode("ROLE_ADMIN")
                                 .orElseThrow(() -> new RuntimeException("管理员角色未找到"));
                         roles.add(adminRole);
                         break;
                     case "mod":
-                        Role modRole = roleRepository.findByName(RoleName.ROLE_MODERATOR)
+                        Role modRole = roleRepository.findByCode("ROLE_MODERATOR")
                                 .orElseThrow(() -> new RuntimeException("版主角色未找到"));
                         roles.add(modRole);
                         break;
                     default:
-                        Role userRole = roleRepository.findByName(RoleName.ROLE_USER)
+                        Role userRole = roleRepository.findByCode("ROLE_USER")
                                 .orElseThrow(() -> new RuntimeException("用户角色未找到"));
                         roles.add(userRole);
                 }
@@ -115,8 +115,12 @@ public class AuthService {
         }
 
         user.setRoles(roles);
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
 
-        return new SignupResponse("用户注册成功！");
+        SignupResponse response = new SignupResponse();
+        response.setMessage("用户注册成功！");
+        response.setUserId(savedUser.getId());
+        response.setUsername(savedUser.getUsername());
+        return response;
     }
 }

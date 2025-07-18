@@ -1,6 +1,8 @@
 package com.admin.modules.auth.entity;
 
 import com.admin.common.entity.BaseEntity;
+import com.admin.modules.auth.enums.UserStatus;
+import com.admin.modules.auth.enums.UserType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -55,12 +57,17 @@ public class User extends BaseEntity {
     )
     private Set<Role> roles = new HashSet<>();
 
-    public enum UserStatus {
-        ACTIVE, FROZEN, DELETED
+
+
+
+    // Constructors
+    public User() {
     }
 
-    public enum UserType {
-        SUPER_ADMIN, ADMIN, USER
+    public User(String username, String email, String passwordHash) {
+        this.username = username;
+        this.email = email;
+        this.passwordHash = passwordHash;
     }
 
     // Getters and Setters

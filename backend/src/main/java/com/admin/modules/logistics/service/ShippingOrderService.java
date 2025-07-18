@@ -1,6 +1,7 @@
 package com.admin.modules.logistics.service;
 
 import com.admin.common.exception.ResourceNotFoundException;
+import com.admin.modules.logistics.dto.CarrierDto;
 import com.admin.modules.logistics.dto.ShippingOrderCreateRequest;
 import com.admin.modules.logistics.dto.ShippingOrderDto;
 import com.admin.modules.logistics.dto.ShippingTrackDto;
@@ -56,7 +57,7 @@ public class ShippingOrderService {
                     shippingOrder.setShippingFee(shippingFee);
                 }
                 break;
-            case LOCAL_DELIVERY:
+            case LOCAL:
                 shippingOrder.setLocalDeliveryPerson(request.getLocalDeliveryPerson());
                 shippingOrder.setLocalDeliveryPhone(request.getLocalDeliveryPhone());
                 shippingOrder.setShippingFee(BigDecimal.valueOf(10.00)); // 本地配送固定费用

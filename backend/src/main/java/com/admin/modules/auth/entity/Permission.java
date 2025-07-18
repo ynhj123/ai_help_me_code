@@ -38,6 +38,18 @@ public class Permission extends BaseEntity {
     @ManyToMany(mappedBy = "permissions")
     private Set<Role> roles = new HashSet<>();
 
+    // Constructors
+    public Permission() {
+    }
+
+    public Permission(String name, String code, String resource, String action, String description) {
+        this.name = name;
+        this.code = code;
+        this.resource = resource;
+        this.action = action;
+        this.description = description;
+    }
+
     // Getters and Setters
     public String getName() {
         return name;

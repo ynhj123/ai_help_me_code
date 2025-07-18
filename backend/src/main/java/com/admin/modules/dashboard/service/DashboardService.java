@@ -11,6 +11,7 @@ import com.admin.modules.order.enums.OrderStatus;
 import com.admin.modules.order.repository.OrderRepository;
 import com.admin.modules.product.entity.Product;
 import com.admin.modules.product.entity.Sku;
+import com.admin.modules.product.enums.ProductStatus;
 import com.admin.modules.product.repository.ProductRepository;
 import com.admin.modules.product.repository.SkuRepository;
 import lombok.RequiredArgsConstructor;
@@ -90,7 +91,7 @@ public class DashboardService {
         
         // 活跃商品数（上架状态）
         stats.setActiveProducts(allProducts.stream()
-                .filter(p -> p.getStatus().name().equals("ACTIVE"))
+                .filter(p -> p.getStatus() == ProductStatus.ACTIVE)
                 .count());
         
         // 低库存商品（库存<10）

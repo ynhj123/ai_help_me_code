@@ -84,12 +84,12 @@ public class UserService {
     public void deleteUser(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
-        
+
         // 不允许删除超级管理员
         if (user.getUserType().name().equals("SUPER_ADMIN")) {
             throw new IllegalArgumentException("Cannot delete super admin user");
         }
-        
+
         user.setStatus(UserStatus.DELETED);
         userRepository.save(user);
     }
@@ -98,11 +98,11 @@ public class UserService {
     public UserDto freezeUser(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
-        
+
         if (user.getStatus() == UserStatus.FROZEN) {
             throw new IllegalArgumentException("User is already frozen");
         }
-        
+
         user.setStatus(UserStatus.FROZEN);
         User updatedUser = userRepository.save(user);
         return convertToDto(updatedUser);
@@ -112,11 +112,11 @@ public class UserService {
     public UserDto unfreezeUser(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
-        
+
         if (user.getStatus() == UserStatus.ACTIVE) {
             throw new IllegalArgumentException("User is already active");
         }
-        
+
         user.setStatus(UserStatus.ACTIVE);
         User updatedUser = userRepository.save(user);
         return convertToDto(updatedUser);
@@ -126,7 +126,7 @@ public class UserService {
     public void resetPassword(Long id, String newPassword) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
-        
+
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
     }
@@ -142,12 +142,12 @@ public class UserService {
         dto.setUserType(user.getUserType());
         dto.setLastLoginAt(user.getLastLoginAt());
         dto.setCreatedAt(user.getCreatedAt());
-        
+
         Set<String> roleNames = user.getRoles().stream()
                 .map(Role::getCode)
                 .collect(Collectors.toSet());
         dto.setRoles(roleNames);
-        
+
         return dto;
     }
 }
