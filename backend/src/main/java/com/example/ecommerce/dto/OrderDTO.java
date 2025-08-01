@@ -4,7 +4,7 @@ import com.example.ecommerce.enums.OrderStatus;
 import com.example.ecommerce.enums.PaymentMethod;
 import lombok.Data;
 
-import javax.validation.constraints.*;
+import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;

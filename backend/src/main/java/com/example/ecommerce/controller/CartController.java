@@ -9,9 +9,10 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -28,16 +29,16 @@ public class CartController {
     /**
      * 添加商品到购物车
      *
-     * @param cartDTO 购物车项
+     * @param cartDTO     购物车项
      * @param userDetails 当前用户
      * @return 添加的购物车项
      */
     @PostMapping
-    public ResultVO<CartDTO> addToCart(@Valid @RequestBody CartDTO cartDTO, 
-                                      @AuthenticationPrincipal UserDetails userDetails) {
+    public ResultVO<CartDTO> addToCart(@Valid @RequestBody CartDTO cartDTO,
+                                       @AuthenticationPrincipal UserDetails userDetails) {
         // 设置用户ID
         cartDTO.setUserId(Long.parseLong(userDetails.getUsername()));
-        
+
         CartDTO addedCart = cartService.addToCart(cartDTO);
         return ResultVO.success("商品已添加到购物车", addedCart);
     }
@@ -45,19 +46,19 @@ public class CartController {
     /**
      * 更新购物车项数量
      *
-     * @param id       购物车项ID
-     * @param quantity 数量
+     * @param id          购物车项ID
+     * @param quantity    数量
      * @param userDetails 当前用户
      * @return 更新后的购物车项
      */
     @PutMapping("/{id}/quantity")
     public ResultVO<CartDTO> updateQuantity(@PathVariable Long id, @RequestParam Integer quantity,
-                                          @AuthenticationPrincipal UserDetails userDetails) {
+                                            @AuthenticationPrincipal UserDetails userDetails) {
         // 检查购物车项是否属于当前用户
         if (!cartService.belongsToUser(id, Long.parseLong(userDetails.getUsername()))) {
             throw new org.springframework.security.access.AccessDeniedException("无权操作该购物车项");
         }
-        
+
         CartDTO cartDTO = cartService.updateQuantity(id, quantity);
         return ResultVO.success("购物车数量更新成功", cartDTO);
     }
@@ -65,19 +66,19 @@ public class CartController {
     /**
      * 更新购物车项选中状态
      *
-     * @param id      购物车项ID
-     * @param selected 选中状态
+     * @param id          购物车项ID
+     * @param selected    选中状态
      * @param userDetails 当前用户
      * @return 更新后的购物车项
      */
     @PutMapping("/{id}/selected")
     public ResultVO<CartDTO> updateSelected(@PathVariable Long id, @RequestParam Boolean selected,
-                                          @AuthenticationPrincipal UserDetails userDetails) {
+                                            @AuthenticationPrincipal UserDetails userDetails) {
         // 检查购物车项是否属于当前用户
         if (!cartService.belongsToUser(id, Long.parseLong(userDetails.getUsername()))) {
             throw new org.springframework.security.access.AccessDeniedException("无权操作该购物车项");
         }
-        
+
         CartDTO cartDTO = cartService.updateSelected(id, selected);
         return ResultVO.success("选中状态更新成功", cartDTO);
     }
@@ -85,13 +86,13 @@ public class CartController {
     /**
      * 批量更新选中状态
      *
-     * @param selected 选中状态
+     * @param selected    选中状态
      * @param userDetails 当前用户
      * @return 更新结果
      */
     @PutMapping("/selected/batch")
     public ResultVO<Boolean> batchUpdateSelected(@RequestParam Boolean selected,
-                                               @AuthenticationPrincipal UserDetails userDetails) {
+                                                 @AuthenticationPrincipal UserDetails userDetails) {
         boolean result = cartService.batchUpdateSelected(Long.parseLong(userDetails.getUsername()), selected);
         return ResultVO.success("批量更新选中状态成功", result);
     }
@@ -99,18 +100,18 @@ public class CartController {
     /**
      * 获取购物车项详情
      *
-     * @param id 购物车项ID
+     * @param id          购物车项ID
      * @param userDetails 当前用户
      * @return 购物车项
      */
     @GetMapping("/{id}")
-    public ResultVO<CartDTO> getCart(@PathVariable Long id, 
-                                   @AuthenticationPrincipal UserDetails userDetails) {
+    public ResultVO<CartDTO> getCart(@PathVariable Long id,
+                                     @AuthenticationPrincipal UserDetails userDetails) {
         // 检查购物车项是否属于当前用户
         if (!cartService.belongsToUser(id, Long.parseLong(userDetails.getUsername()))) {
             throw new org.springframework.security.access.AccessDeniedException("无权访问该购物车项");
         }
-        
+
         CartDTO cartDTO = cartService.getCartById(id);
         return ResultVO.success(cartDTO);
     }
@@ -158,12 +159,12 @@ public class CartController {
     @GetMapping("/search")
     @PreAuthorize("hasRole('ADMIN')")
     public ResultVO<List<CartDTO>> searchCarts(@RequestParam(required = false) Long userId,
-                                             @RequestParam(required = false) Long productId,
-                                             @RequestParam(required = false) Long categoryId,
-                                             @RequestParam(required = false) Integer status,
-                                             @RequestParam(required = false) Boolean selected,
-                                             @RequestParam(defaultValue = "1") @Min(1) Integer page,
-                                             @RequestParam(defaultValue = "10") @Min(1) Integer size) {
+                                               @RequestParam(required = false) Long productId,
+                                               @RequestParam(required = false) Long categoryId,
+                                               @RequestParam(required = false) Integer status,
+                                               @RequestParam(required = false) Boolean selected,
+                                               @RequestParam(defaultValue = "1") @Min(1) Integer page,
+                                               @RequestParam(defaultValue = "10") @Min(1) Integer size) {
         List<CartDTO> cartList = cartService.getCartList(userId, productId, categoryId, status, selected, page, size);
         return ResultVO.success(cartList);
     }
@@ -181,10 +182,10 @@ public class CartController {
     @GetMapping("/count")
     @PreAuthorize("hasRole('ADMIN')")
     public ResultVO<Integer> getCartCount(@RequestParam(required = false) Long userId,
-                                        @RequestParam(required = false) Long productId,
-                                        @RequestParam(required = false) Long categoryId,
-                                        @RequestParam(required = false) Integer status,
-                                        @RequestParam(required = false) Boolean selected) {
+                                          @RequestParam(required = false) Long productId,
+                                          @RequestParam(required = false) Long categoryId,
+                                          @RequestParam(required = false) Integer status,
+                                          @RequestParam(required = false) Boolean selected) {
         int count = cartService.getCartCount(userId, productId, categoryId, status, selected);
         return ResultVO.success(count);
     }
@@ -228,19 +229,19 @@ public class CartController {
     /**
      * 更新购物车项
      *
-     * @param id       购物车项ID
-     * @param cartDTO  购物车项信息
+     * @param id          购物车项ID
+     * @param cartDTO     购物车项信息
      * @param userDetails 当前用户
      * @return 更新后的购物车项
      */
     @PutMapping("/{id}")
     public ResultVO<CartDTO> updateCart(@PathVariable Long id, @Valid @RequestBody CartDTO cartDTO,
-                                      @AuthenticationPrincipal UserDetails userDetails) {
+                                        @AuthenticationPrincipal UserDetails userDetails) {
         // 检查购物车项是否属于当前用户
         if (!cartService.belongsToUser(id, Long.parseLong(userDetails.getUsername()))) {
             throw new org.springframework.security.access.AccessDeniedException("无权操作该购物车项");
         }
-        
+
         CartDTO updatedCart = cartService.updateCart(id, cartDTO);
         return ResultVO.success("购物车更新成功", updatedCart);
     }
@@ -248,7 +249,7 @@ public class CartController {
     /**
      * 删除购物车项
      *
-     * @param id 购物车项ID
+     * @param id          购物车项ID
      * @param userDetails 当前用户
      * @return 删除结果
      */
@@ -258,7 +259,7 @@ public class CartController {
         if (!cartService.belongsToUser(id, Long.parseLong(userDetails.getUsername()))) {
             throw new org.springframework.security.access.AccessDeniedException("无权操作该购物车项");
         }
-        
+
         cartService.deleteCart(id);
         return ResultVO.success("购物车项删除成功", null);
     }
@@ -266,7 +267,7 @@ public class CartController {
     /**
      * 根据商品ID删除购物车项
      *
-     * @param productId 商品ID
+     * @param productId   商品ID
      * @param userDetails 当前用户
      * @return 删除结果
      */
@@ -291,7 +292,7 @@ public class CartController {
     /**
      * 软删除购物车项
      *
-     * @param id 购物车项ID
+     * @param id          购物车项ID
      * @param userDetails 当前用户
      * @return 删除结果
      */
@@ -301,7 +302,7 @@ public class CartController {
         if (!cartService.belongsToUser(id, Long.parseLong(userDetails.getUsername()))) {
             throw new org.springframework.security.access.AccessDeniedException("无权操作该购物车项");
         }
-        
+
         cartService.softDelete(id);
         return ResultVO.success("购物车项已移除", null);
     }
@@ -321,7 +322,7 @@ public class CartController {
     /**
      * 检查购物车项是否存在
      *
-     * @param userId   用户ID
+     * @param userId    用户ID
      * @param productId 商品ID
      * @return 是否存在
      */
@@ -348,7 +349,7 @@ public class CartController {
     /**
      * 检查商品是否已在购物车中
      *
-     * @param userId   用户ID
+     * @param userId    用户ID
      * @param productId 商品ID
      * @return 是否已存在
      */
@@ -361,7 +362,7 @@ public class CartController {
     /**
      * 从购物车中移除商品
      *
-     * @param userId   用户ID
+     * @param userId    用户ID
      * @param productId 商品ID
      * @return 移除结果
      */
@@ -379,8 +380,8 @@ public class CartController {
      * @return 总金额
      */
     @GetMapping("/calculate-subtotal")
-    public ResultVO<java.math.BigDecimal> calculateSubtotal(@RequestParam java.math.BigDecimal productPrice, 
-                                                           @RequestParam Integer quantity) {
+    public ResultVO<java.math.BigDecimal> calculateSubtotal(@RequestParam java.math.BigDecimal productPrice,
+                                                            @RequestParam Integer quantity) {
         BigDecimal subtotal = cartService.calculateSubtotal(productPrice, quantity);
         return ResultVO.success(subtotal);
     }

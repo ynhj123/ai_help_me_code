@@ -3,7 +3,7 @@ package com.example.ecommerce.dto;
 import com.example.ecommerce.enums.ProductStatus;
 import lombok.Data;
 
-import javax.validation.constraints.*;
+import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
