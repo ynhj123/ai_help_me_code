@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.ecommerce.mapper.CategoryMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="CategoryResultMap" type="com.example.ecommerce.entity.Category">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="description" property="description"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="sort_order" property="sortOrder"/>
+        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <!-- 插入分类 -->
+    <insert id="insert" parameterType="com.example.ecommerce.entity.Category" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO categories (name, description, parent_id, sort_order, status, created_at, updated_at)
+        VALUES (#{name}, #{description}, #{parentId}, #{sortOrder}, #{status}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <!-- 根据ID查询分类 -->
+    <select id="selectById" parameterType="long" resultMap="CategoryResultMap">
+        SELECT * FROM categories WHERE id = #{id}
+    </select>
+
+    <!-- 根据父级分类ID查询子分类 -->
+    <select id="selectByParentId" parameterType="long" resultMap="CategoryResultMap">
+        SELECT * FROM categories WHERE parent_id = #{parentId} ORDER BY sort_order ASC, id ASC
+    </select>
+
+    <!-- 查询所有分类 -->
+    <select id="selectAll" resultMap="CategoryResultMap">
+        SELECT * FROM categories ORDER BY sort_order ASC, id ASC
+    </select>
+
+    <!-- 查询所有启用的分类 -->
+    <select id="selectAllEnabled" resultMap="CategoryResultMap">
+        SELECT * FROM categories WHERE status = 1 ORDER BY sort_order ASC, id ASC
+    </select>
+
+    <!-- 查询分类列表（分页） -->
+    <select id="selectPage" resultMap="CategoryResultMap">
+        SELECT * FROM categories ORDER BY sort_order ASC, id ASC LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 查询分类总数 -->
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM categories
+    </select>
+
+    <!-- 更新分类 -->
+    <update id="update" parameterType="com.example.ecommerce.entity.Category">
+        UPDATE categories
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="parentId != null">parent_id = #{parentId},</if>
+            <if test="sortOrder != null">sort_order = #{sortOrder},</if>
+            <if test="status != null">status = #{status},</if>
+            updated_at = #{updatedAt}
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 根据ID删除分类 -->
+    <delete id="deleteById" parameterType="long">
+        DELETE FROM categories WHERE id = #{id}
+    </delete>
+
+    <!-- 根据父级分类ID删除子分类 -->
+    <delete id="deleteByParentId" parameterType="long">
+        DELETE FROM categories WHERE parent_id = #{parentId}
+    </delete>
+
+    <!-- 检查分类是否存在子分类 -->
+    <select id="hasChildren" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM categories WHERE parent_id = #{id}
+    </select>
+
+    <!-- 检查分类下是否有商品 -->
+    <select id="hasProducts" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM products WHERE category_id = #{id}
+    </select>
+
+    <!-- 获取分类路径 -->
+    <select id="getCategoryPath" resultMap="CategoryResultMap">
+        WITH RECURSIVE category_tree AS (
+            SELECT id, parent_id, name FROM categories WHERE id = #{id}
+            UNION ALL
+            SELECT c.id, c.parent_id, c.name FROM categories c
+            INNER JOIN category_tree ct ON c.id = ct.parent_id
+        )
+        SELECT id, parent_id, name FROM category_tree ORDER BY parent_id DESC
+    </select>
+
+    <!-- 查询分类树结构 -->
+    <select id="findCategoryTree" resultMap="CategoryResultMap">
+        SELECT * FROM categories 
+        WHERE status = 1
+        ORDER BY parent_id ASC, sort_order ASC, id ASC
+    </select>
+
+    <!-- 查询顶级分类 -->
+    <select id="findTopLevelCategories" resultMap="CategoryResultMap">
+        SELECT * FROM categories 
+        WHERE parent_id = 0 AND status = 1
+        ORDER BY sort_order ASC, id ASC
+    </select>
+
+    <!-- 查询指定层级的分类 -->
+    <select id="findCategoriesByLevel" resultMap="CategoryResultMap">
+        WITH RECURSIVE category_tree AS (
+            SELECT id, parent_id, name FROM categories WHERE parent_id = 0
+            UNION ALL
+            SELECT c.id, c.parent_id, c.name FROM categories c
+            INNER JOIN category_tree ct ON c.parent_id = ct.id
+        )
+        SELECT * FROM categories 
+        WHERE id IN (
+            SELECT id FROM category_tree 
+            WHERE LENGTH(REPLACE(id ->> '$', '.', '')) - LENGTH(id ->> '$') + 1 = #{level}
+        )
+        AND status = 1
+        ORDER BY sort_order ASC, id ASC
+    </select>
+
+    <!-- 查询分类层级深度 -->
+    <select id="findCategoryDepth" resultType="int">
+        WITH RECURSIVE category_tree AS (
+            SELECT id, parent_id, 1 as depth FROM categories WHERE id = #{id}
+            UNION ALL
+            SELECT c.id, c.parent_id, ct.depth + 1 as depth 
+            FROM categories c
+            INNER JOIN category_tree ct ON c.id = ct.parent_id
+        )
+        SELECT MAX(depth) FROM category_tree
+    </select>
+
+    <!-- 查询分类面包屑 -->
+    <select id="findCategoryBreadcrumb" resultMap="CategoryResultMap">
+        WITH RECURSIVE category_tree AS (
+            SELECT id, parent_id, name FROM categories WHERE id = #{id}
+            UNION ALL
+            SELECT c.id, c.parent_id, c.name FROM categories c
+            INNER JOIN category_tree ct ON c.id = ct.parent_id
+        )
+        SELECT id, parent_id, name FROM category_tree 
+        ORDER BY parent_id DESC
+    </select>
+
+    <!-- 查询分类商品统计 -->
+    <select id="findCategoryProductStats" resultType="map">
+        SELECT 
+            c.id as category_id,
+            c.name as category_name,
+            COUNT(p.id) as product_count,
+            AVG(p.price) as average_price,
+            MIN(p.price) as min_price,
+            MAX(p.price) as max_price
+        FROM categories c
+        LEFT JOIN products p ON c.id = p.category_id AND p.status = 1
+        GROUP BY c.id, c.name
+        ORDER BY product_count DESC
+    </select>
+
+    <!-- 查询分类子分类统计 -->
+    <select id="findCategoryChildStats" resultType="map">
+        SELECT 
+            c.id as category_id,
+            c.name as category_name,
+            COUNT(child.id) as child_count
+        FROM categories c
+        LEFT JOIN categories child ON c.id = child.parent_id
+        GROUP BY c.id, c.name
+        ORDER BY child_count DESC
+    </select>
+
+    <!-- 查询分类层级统计 -->
+    <select id="findCategoryLevelStats" resultType="map">
+        SELECT 
+            level,
+            COUNT(*) as category_count
+        FROM (
+            SELECT 
+                id,
+                (LENGTH(parent_id_path) - LENGTH(REPLACE(parent_id_path, '.', ''))) + 1 as level
+            FROM (
+                SELECT 
+                    id,
+                    IF(parent_id = 0, '0', 
+                        CONCAT_WS('.', 
+                            (SELECT GROUP_CONCAT(parent_id ORDER BY parent_id DESC SEPARATOR '.') 
+                             FROM categories 
+                             WHERE FIND_IN_SET(id, (SELECT GROUP_CONCAT(parent_id ORDER BY parent_id DESC SEPARATOR ',') 
+                                                   FROM categories 
+                                                   WHERE id = c.id)))
+                        )
+                    ) as parent_id_path
+                FROM categories c
+            ) as category_with_level
+            GROUP BY level
+        ) as level_stats
+        ORDER BY level
+    </select>
+
+    <!-- 查询分类名称列表 -->
+    <select id="findCategoryNames" resultType="map">
+        SELECT id, name FROM categories 
+        WHERE status = 1
+        ORDER BY name
+    </select>
+
+    <!-- 查询分类路径映射 -->
+    <select id="findCategoryPathMap" resultType="map">
+        SELECT 
+            id,
+            name,
+            parent_id,
+            CONCAT_WS(' > ', 
+                (SELECT GROUP_CONCAT(name ORDER BY parent_id DESC SEPARATOR ' > ') 
+                 FROM categories 
+                 WHERE FIND_IN_SET(id, (SELECT GROUP_CONCAT(parent_id ORDER BY parent_id DESC SEPARATOR ',') 
+                                       FROM categories 
+                                       WHERE id = c.id)))
+            ) as path
+        FROM categories c
+        WHERE status = 1
+        ORDER BY path
+    </select>
+
+    <!-- 查询分类状态分布 -->
+    <select id="findCategoryStatusDistribution" resultType="map">
+        SELECT 
+            status,
+            COUNT(*) as count
+        FROM categories
+        GROUP BY status
+    </select>
+
+    <!-- 查询分类创建趋势 -->
+    <select id="findCategoryCreationTrend" resultType="map">
+        SELECT 
+            DATE(created_at) as date,
+            COUNT(*) as count
+        FROM categories
+        WHERE created_at BETWEEN #{startTime} AND #{endTime}
+        GROUP BY DATE(created_at)
+        ORDER BY date
+    </select>
+
+    <!-- 批量更新分类排序 -->
+    <update id="batchUpdateSortOrder">
+        <foreach collection="categoryIds" item="categoryId" index="index" separator=";">
+            UPDATE categories 
+            SET sort_order = #{sortOrders[index]}, 
+                updated_at = NOW() 
+            WHERE id = #{categoryId}
+        </foreach>
+    </update>
+
+    <!-- 批量更新分类状态 -->
+    <update id="batchUpdateStatus">
+        <foreach collection="categoryIds" item="categoryId" index="index" separator=";">
+            UPDATE categories 
+            SET status = #{statuses[index]}, 
+                updated_at = NOW() 
+            WHERE id = #{categoryId}
+        </foreach>
+    </update>
+
+    <!-- 查询分类关联的商品分类 -->
+    <select id="findRelatedCategories" resultMap="CategoryResultMap">
+        SELECT DISTINCT c.* 
+        FROM categories c
+        INNER JOIN products p ON c.id = p.category_id
+        WHERE p.id = #{productId}
+        AND c.status = 1
+        ORDER BY c.sort_order ASC, c.id ASC
+    </select>
+
+</mapper>

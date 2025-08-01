@@ -1,0 +1,81 @@
+package com.example.ecommerce.dto;
+
+import lombok.Data;
+
+import javax.validation.constraints.*;
+import java.math.BigDecimal;
+
+/**
+ * 订单商品DTO类
+ */
+@Data
+public class OrderItemDTO {
+
+    /**
+     * 主键ID
+     */
+    private Long id;
+
+    /**
+     * 订单ID
+     */
+    @NotNull(message = "订单ID不能为空")
+    private Long orderId;
+
+    /**
+     * 商品ID
+     */
+    @NotNull(message = "商品ID不能为空")
+    private Long productId;
+
+    /**
+     * 商品名称
+     */
+    @NotBlank(message = "商品名称不能为空")
+    @Size(max = 255, message = "商品名称长度不能超过255个字符")
+    private String productName;
+
+    /**
+     * 商品图片
+     */
+    private String productImage;
+
+    /**
+     * 商品SKU
+     */
+    @NotBlank(message = "商品SKU不能为空")
+    @Size(max = 100, message = "商品SKU长度不能超过100个字符")
+    private String productSku;
+
+    /**
+     * 商品单价
+     */
+    @NotNull(message = "商品单价不能为空")
+    @DecimalMin(value = "0.01", message = "商品单价必须大于0")
+    private BigDecimal productPrice;
+
+    /**
+     * 购买数量
+     */
+    @NotNull(message = "购买数量不能为空")
+    @Min(value = 1, message = "购买数量必须大于0")
+    private Integer quantity;
+
+    /**
+     * 商品总金额
+     */
+    @NotNull(message = "商品总金额不能为空")
+    @DecimalMin(value = "0.01", message = "商品总金额必须大于0")
+    private BigDecimal subtotal;
+
+    /**
+     * 商品分类ID
+     */
+    @NotNull(message = "商品分类ID不能为空")
+    private Long categoryId;
+
+    /**
+     * 商品分类名称
+     */
+    private String categoryName;
+}

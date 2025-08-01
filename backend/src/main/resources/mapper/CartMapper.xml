@@ -1,0 +1,584 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.ecommerce.mapper.CartMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="CartResultMap" type="com.example.ecommerce.entity.Cart">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="product_id" property="productId"/>
+        <result column="product_name" property="productName"/>
+        <result column="product_image" property="productImage"/>
+        <result column="product_sku" property="productSku"/>
+        <result column="product_price" property="productPrice"/>
+        <result column="quantity" property="quantity"/>
+        <result column="subtotal" property="subtotal"/>
+        <result column="category_id" property="categoryId"/>
+        <result column="category_name" property="categoryName"/>
+        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result column="selected" property="selected"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <!-- 插入购物车项 -->
+    <insert id="insert" parameterType="com.example.ecommerce.entity.Cart" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO cart_items (user_id, product_id, product_name, product_image, product_sku, 
+                               product_price, quantity, subtotal, category_id, category_name, 
+                               status, selected, created_at, updated_at)
+        VALUES (#{userId}, #{productId}, #{productName}, #{productImage}, #{productSku}, 
+                #{productPrice}, #{quantity}, #{subtotal}, #{categoryId}, #{categoryName}, 
+                #{status}, #{selected}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <!-- 批量插入购物车项 -->
+    <insert id="batchInsert">
+        INSERT INTO cart_items (user_id, product_id, product_name, product_image, product_sku, 
+                               product_price, quantity, subtotal, category_id, category_name, 
+                               status, selected, created_at, updated_at)
+        VALUES 
+        <foreach collection="cartItems" item="item" separator=",">
+            (#{item.userId}, #{item.productId}, #{item.productName}, #{item.productImage}, #{item.productSku}, 
+             #{item.productPrice}, #{item.quantity}, #{item.subtotal}, #{item.categoryId}, #{item.categoryName}, 
+             #{item.status}, #{item.selected}, #{item.createdAt}, #{item.updatedAt})
+        </foreach>
+    </insert>
+
+    <!-- 根据ID查询购物车项 -->
+    <select id="selectById" parameterType="long" resultMap="CartResultMap">
+        SELECT * FROM cart_items WHERE id = #{id}
+    </select>
+
+    <!-- 根据用户ID和商品ID查询购物车项 -->
+    <select id="selectByUserIdAndProductId" resultMap="CartResultMap">
+        SELECT * FROM cart_items 
+        WHERE user_id = #{userId} AND product_id = #{productId} AND status = 1
+    </select>
+
+    <!-- 根据用户ID查询购物车列表 -->
+    <select id="selectByUserId" resultMap="CartResultMap">
+        SELECT * FROM cart_items 
+        WHERE user_id = #{userId} AND status = 1 
+        ORDER BY id DESC
+    </select>
+
+    <!-- 查询购物车列表（分页） -->
+    <select id="selectPage" resultMap="CartResultMap">
+        SELECT * FROM cart_items 
+        WHERE status = 1 
+        ORDER BY id DESC 
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 查询购物车列表（带条件） -->
+    <select id="selectAll" resultMap="CartResultMap">
+        SELECT * FROM cart_items WHERE 1=1
+        <if test="userId != null">
+            AND user_id = #{userId}
+        </if>
+        <if test="productId != null">
+            AND product_id = #{productId}
+        </if>
+        <if test="categoryId != null">
+            AND category_id = #{categoryId}
+        </if>
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        <if test="selected != null">
+            AND selected = #{selected}
+        </if>
+        ORDER BY id DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 查询购物车总数 -->
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM cart_items WHERE 1=1
+        <if test="userId != null">
+            AND user_id = #{userId}
+        </if>
+        <if test="productId != null">
+            AND product_id = #{productId}
+        </if>
+        <if test="categoryId != null">
+            AND category_id = #{categoryId}
+        </if>
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        <if test="selected != null">
+            AND selected = #{selected}
+        </if>
+    </select>
+
+    <!-- 更新购物车项 -->
+    <update id="update" parameterType="com.example.ecommerce.entity.Cart">
+        UPDATE cart_items
+        <set>
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="productId != null">product_id = #{productId},</if>
+            <if test="productName != null">product_name = #{productName},</if>
+            <if test="productImage != null">product_image = #{productImage},</if>
+            <if test="productSku != null">product_sku = #{productSku},</if>
+            <if test="productPrice != null">product_price = #{productPrice},</if>
+            <if test="quantity != null">quantity = #{quantity},</if>
+            <if test="subtotal != null">subtotal = #{subtotal},</if>
+            <if test="categoryId != null">category_id = #{categoryId},</if>
+            <if test="categoryName != null">category_name = #{categoryName},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="selected != null">selected = #{selected},</if>
+            updated_at = #{updatedAt}
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 更新购物车项数量 -->
+    <update id="updateQuantity">
+        UPDATE cart_items 
+        SET quantity = #{quantity}, 
+            subtotal = product_price * #{quantity}, 
+            updated_at = NOW() 
+        WHERE id = #{id}
+    </update>
+
+    <!-- 更新选中状态 -->
+    <update id="updateSelected">
+        UPDATE cart_items 
+        SET selected = #{selected}, 
+            updated_at = NOW() 
+        WHERE id = #{id}
+    </update>
+
+    <!-- 批量更新选中状态 -->
+    <update id="batchUpdateSelected">
+        UPDATE cart_items 
+        SET selected = #{selected}, 
+            updated_at = NOW() 
+        WHERE user_id = #{userId} AND status = 1
+    </update>
+
+    <!-- 根据ID删除购物车项 -->
+    <delete id="deleteById" parameterType="long">
+        DELETE FROM cart_items WHERE id = #{id}
+    </delete>
+
+    <!-- 根据用户ID和商品ID删除购物车项 -->
+    <delete id="deleteByUserIdAndProductId">
+        DELETE FROM cart_items WHERE user_id = #{userId} AND product_id = #{productId}
+    </delete>
+
+    <!-- 根据用户ID删除购物车项 -->
+    <delete id="deleteByUserId" parameterType="long">
+        DELETE FROM cart_items WHERE user_id = #{userId}
+    </delete>
+
+    <!-- 软删除购物车项 -->
+    <update id="softDelete">
+        UPDATE cart_items 
+        SET status = 0, 
+            updated_at = NOW() 
+        WHERE id = #{id}
+    </update>
+
+    <!-- 软删除用户的所有购物车项 -->
+    <update id="softDeleteByUserId" parameterType="long">
+        UPDATE cart_items 
+        SET status = 0, 
+            updated_at = NOW() 
+        WHERE user_id = #{userId}
+    </update>
+
+    <!-- 清空用户购物车 -->
+    <delete id="clearCart" parameterType="long">
+        DELETE FROM cart_items WHERE user_id = #{userId}
+    </delete>
+
+    <!-- 计算用户购物车总金额 -->
+    <select id="calculateTotalAmount" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(subtotal), 0) 
+        FROM cart_items 
+        WHERE user_id = #{userId} AND status = 1 AND selected = 1
+    </select>
+
+    <!-- 计算用户购物车商品总数 -->
+    <select id="calculateTotalQuantity" resultType="int">
+        SELECT COALESCE(SUM(quantity), 0) 
+        FROM cart_items 
+        WHERE user_id = #{userId} AND status = 1 AND selected = 1
+    </select>
+
+    <!-- 检查购物车项是否存在 -->
+    <select id="existsById" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM cart_items WHERE id = #{id} AND status = 1
+    </select>
+
+    <!-- 检查购物车项是否存在 -->
+    <select id="existsByUserIdAndProductId" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM cart_items 
+        WHERE user_id = #{userId} AND product_id = #{productId} AND status = 1
+    </select>
+
+    <!-- 检查购物车项是否属于指定用户 -->
+    <select id="belongsToUser" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM cart_items 
+        WHERE id = #{id} AND user_id = #{userId} AND status = 1
+    </select>
+
+    <!-- 查询用户购物车统计 -->
+    <select id="findCartStats" resultType="map">
+        SELECT 
+            COUNT(*) as total_items,
+            COUNT(CASE WHEN selected = 1 THEN 1 END) as selected_items,
+            COALESCE(SUM(quantity), 0) as total_quantity,
+            COALESCE(SUM(CASE WHEN selected = 1 THEN quantity ELSE 0 END), 0) as selected_quantity,
+            COALESCE(SUM(subtotal), 0) as total_amount,
+            COALESCE(SUM(CASE WHEN selected = 1 THEN subtotal ELSE 0 END), 0) as selected_amount
+        FROM cart_items
+        WHERE user_id = #{userId} AND status = 1
+    </select>
+
+    <!-- 查询购物车商品分类统计 -->
+    <select id="findCartCategoryStats" resultType="map">
+        SELECT 
+            c.id as category_id,
+            c.name as category_name,
+            COUNT(ci.id) as item_count,
+            SUM(ci.quantity) as total_quantity,
+            COALESCE(SUM(ci.subtotal), 0) as total_amount
+        FROM cart_items ci
+        INNER JOIN products p ON ci.product_id = p.id
+        INNER JOIN categories c ON p.category_id = c.id
+        WHERE ci.user_id = #{userId} AND ci.status = 1
+        GROUP BY c.id, c.name
+        ORDER BY total_amount DESC
+    </select>
+
+    <!-- 查询购物车商品统计 -->
+    <select id="findCartProductStats" resultType="map">
+        SELECT 
+            p.id as product_id,
+            p.name as product_name,
+            p.image as product_image,
+            COUNT(ci.id) as cart_count,
+            SUM(ci.quantity) as total_quantity,
+            COALESCE(SUM(ci.subtotal), 0) as total_amount
+        FROM cart_items ci
+        INNER JOIN products p ON ci.product_id = p.id
+        WHERE ci.user_id = #{userId} AND ci.status = 1
+        GROUP BY p.id, p.name, p.image
+        ORDER BY total_quantity DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询购物车选中商品统计 -->
+    <select id="findSelectedCartStats" resultType="map">
+        SELECT 
+            COUNT(*) as selected_items,
+            COALESCE(SUM(quantity), 0) as selected_quantity,
+            COALESCE(SUM(subtotal), 0) as selected_amount
+        FROM cart_items
+        WHERE user_id = #{userId} AND status = 1 AND selected = 1
+    </select>
+
+    <!-- 查询购物车商品价格分布 -->
+    <select id="findCartPriceDistribution" resultType="map">
+        SELECT 
+            CASE 
+                WHEN product_price < 50 THEN '0-50'
+                WHEN product_price BETWEEN 50 AND 100 THEN '50-100'
+                WHEN product_price BETWEEN 100 AND 200 THEN '100-200'
+                WHEN product_price BETWEEN 200 AND 500 THEN '200-500'
+                WHEN product_price BETWEEN 500 AND 1000 THEN '500-1000'
+                ELSE '1000+'
+            END as price_range,
+            COUNT(*) as item_count,
+            COALESCE(SUM(quantity), 0) as total_quantity,
+            COALESCE(SUM(subtotal), 0) as total_amount
+        FROM cart_items
+        WHERE user_id = #{userId} AND status = 1
+        GROUP BY price_range
+        ORDER BY 
+            CASE price_range
+                WHEN '0-50' THEN 1
+                WHEN '50-100' THEN 2
+                WHEN '100-200' THEN 3
+                WHEN '200-500' THEN 4
+                WHEN '500-1000' THEN 5
+                ELSE 6
+            END
+    </select>
+
+    <!-- 查询购物车商品分类分布 -->
+    <select id="findCartCategoryDistribution" resultType="map">
+        SELECT 
+            c.name as category_name,
+            COUNT(ci.id) as item_count,
+            SUM(ci.quantity) as total_quantity,
+            COALESCE(SUM(ci.subtotal), 0) as total_amount
+        FROM cart_items ci
+        INNER JOIN products p ON ci.product_id = p.id
+        INNER JOIN categories c ON p.category_id = c.id
+        WHERE ci.user_id = #{userId} AND ci.status = 1
+        GROUP BY c.name
+        ORDER BY total_quantity DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询购物车商品品牌分布 -->
+    <select id="findCartBrandDistribution" resultType="map">
+        SELECT 
+            p.brand as brand_name,
+            COUNT(ci.id) as item_count,
+            SUM(ci.quantity) as total_quantity,
+            COALESCE(SUM(ci.subtotal), 0) as total_amount
+        FROM cart_items ci
+        INNER JOIN products p ON ci.product_id = p.id
+        WHERE ci.user_id = #{userId} AND ci.status = 1
+        AND p.brand IS NOT NULL AND p.brand != ''
+        GROUP BY p.brand
+        ORDER BY total_quantity DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询购物车商品SKU分布 -->
+    <select id="findCartSkuDistribution" resultType="map">
+        SELECT 
+            p.sku as sku,
+            p.name as product_name,
+            COUNT(ci.id) as cart_count,
+            SUM(ci.quantity) as total_quantity,
+            COALESCE(SUM(ci.subtotal), 0) as total_amount
+        FROM cart_items ci
+        INNER JOIN products p ON ci.product_id = p.id
+        WHERE ci.user_id = #{userId} AND ci.status = 1
+        GROUP BY p.sku, p.name
+        ORDER BY total_quantity DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询购物车商品图片分布 -->
+    <select id="findCartImageDistribution" resultType="map">
+        SELECT 
+            p.image as product_image,
+            COUNT(ci.id) as cart_count,
+            SUM(ci.quantity) as total_quantity,
+            COALESCE(SUM(ci.subtotal), 0) as total_amount
+        FROM cart_items ci
+        INNER JOIN products p ON ci.product_id = p.id
+        WHERE ci.user_id = #{userId} AND ci.status = 1
+        AND p.image IS NOT NULL AND p.image != ''
+        GROUP BY p.image
+        ORDER BY total_quantity DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询购物车商品状态分布 -->
+    <select id="findCartStatusDistribution" resultType="map">
+        SELECT 
+            status,
+            COUNT(*) as item_count,
+            SUM(quantity) as total_quantity,
+            COALESCE(SUM(subtotal), 0) as total_amount
+        FROM cart_items
+        WHERE user_id = #{userId}
+        GROUP BY status
+    </select>
+
+    <!-- 查询购物车商品选中状态分布 -->
+    <select id="findCartSelectedDistribution" resultType="map">
+        SELECT 
+            selected,
+            COUNT(*) as item_count,
+            SUM(quantity) as total_quantity,
+            COALESCE(SUM(subtotal), 0) as total_amount
+        FROM cart_items
+        WHERE user_id = #{userId} AND status = 1
+        GROUP BY selected
+    </select>
+
+    <!-- 查询购物车商品创建时间分布 -->
+    <select id="findCartCreationTimeDistribution" resultType="map">
+        SELECT 
+            DATE(created_at) as date,
+            COUNT(*) as item_count,
+            SUM(quantity) as total_quantity,
+            COALESCE(SUM(subtotal), 0) as total_amount
+        FROM cart_items
+        WHERE user_id = #{userId} AND status = 1
+        GROUP BY DATE(created_at)
+        ORDER BY date DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询购物车商品更新时间分布 -->
+    <select id="findCartUpdateTimeDistribution" resultType="map">
+        SELECT 
+            DATE(updated_at) as date,
+            COUNT(*) as item_count,
+            SUM(quantity) as total_quantity,
+            COALESCE(SUM(subtotal), 0) as total_amount
+        FROM cart_items
+        WHERE user_id = #{userId} AND status = 1
+        GROUP BY DATE(updated_at)
+        ORDER BY date DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询购物车商品价格区间分布 -->
+    <select id="findCartPriceRangeDistribution" resultType="map">
+        SELECT 
+            CASE 
+                WHEN product_price < 50 THEN '0-50'
+                WHEN product_price BETWEEN 50 AND 100 THEN '50-100'
+                WHEN product_price BETWEEN 100 AND 200 THEN '100-200'
+                WHEN product_price BETWEEN 200 AND 500 THEN '200-500'
+                WHEN product_price BETWEEN 500 AND 1000 THEN '500-1000'
+                ELSE '1000+'
+            END as price_range,
+            COUNT(*) as item_count,
+            SUM(quantity) as total_quantity,
+            COALESCE(SUM(subtotal), 0) as total_amount
+        FROM cart_items
+        WHERE user_id = #{userId} AND status = 1
+        GROUP BY price_range
+        ORDER BY 
+            CASE price_range
+                WHEN '0-50' THEN 1
+                WHEN '50-100' THEN 2
+                WHEN '100-200' THEN 3
+                WHEN '200-500' THEN 4
+                WHEN '500-1000' THEN 5
+                ELSE 6
+            END
+    </select>
+
+    <!-- 查询购物车商品数量分布 -->
+    <select id="findCartQuantityDistribution" resultType="map">
+        SELECT 
+            CASE 
+                WHEN quantity = 1 THEN '1'
+                WHEN quantity = 2 THEN '2'
+                WHEN quantity = 3 THEN '3'
+                WHEN quantity BETWEEN 4 AND 5 THEN '4-5'
+                ELSE '6+'
+            END as quantity_range,
+            COUNT(*) as item_count,
+            SUM(quantity) as total_quantity,
+            COALESCE(SUM(subtotal), 0) as total_amount
+        FROM cart_items
+        WHERE user_id = #{userId} AND status = 1
+        GROUP BY quantity_range
+        ORDER BY 
+            CASE quantity_range
+                WHEN '1' THEN 1
+                WHEN '2' THEN 2
+                WHEN '3' THEN 3
+                WHEN '4-5' THEN 4
+                ELSE 5
+            END
+    </select>
+
+    <!-- 查询购物车商品总价分布 -->
+    <select id="findCartSubtotalDistribution" resultType="map">
+        SELECT 
+            CASE 
+                WHEN subtotal < 50 THEN '0-50'
+                WHEN subtotal BETWEEN 50 AND 100 THEN '50-100'
+                WHEN subtotal BETWEEN 100 AND 200 THEN '100-200'
+                WHEN subtotal BETWEEN 200 AND 500 THEN '200-500'
+                WHEN subtotal BETWEEN 500 AND 1000 THEN '500-1000'
+                ELSE '1000+'
+            END as subtotal_range,
+            COUNT(*) as item_count,
+            SUM(quantity) as total_quantity,
+            COALESCE(SUM(subtotal), 0) as total_amount
+        FROM cart_items
+        WHERE user_id = #{userId} AND status = 1
+        GROUP BY subtotal_range
+        ORDER BY 
+            CASE subtotal_range
+                WHEN '0-50' THEN 1
+                WHEN '50-100' THEN 2
+                WHEN '100-200' THEN 3
+                WHEN '200-500' THEN 4
+                WHEN '500-1000' THEN 5
+                ELSE 6
+            END
+    </select>
+
+    <!-- 查询购物车商品综合统计 -->
+    <select id="findCartComprehensiveStats" resultType="map">
+        SELECT 
+            COUNT(*) as total_items,
+            COUNT(DISTINCT product_id) as unique_products,
+            COUNT(CASE WHEN selected = 1 THEN 1 END) as selected_items,
+            COALESCE(SUM(quantity), 0) as total_quantity,
+            COALESCE(SUM(CASE WHEN selected = 1 THEN quantity ELSE 0 END), 0) as selected_quantity,
+            COALESCE(SUM(subtotal), 0) as total_amount,
+            COALESCE(SUM(CASE WHEN selected = 1 THEN subtotal ELSE 0 END), 0) as selected_amount,
+            COALESCE(AVG(product_price), 0) as average_price,
+            COALESCE(MIN(product_price), 0) as min_price,
+            COALESCE(MAX(product_price), 0) as max_price,
+            COALESCE(AVG(quantity), 0) as average_quantity,
+            COALESCE(AVG(subtotal), 0) as average_subtotal
+        FROM cart_items
+        WHERE user_id = #{userId} AND status = 1
+    </select>
+
+    <!-- 批量更新购物车项 -->
+    <update id="batchUpdate">
+        <foreach collection="cartItems" item="item" index="index" separator=";">
+            UPDATE cart_items 
+            SET product_name = #{item.productName}, 
+                product_image = #{item.productImage}, 
+                product_sku = #{item.productSku}, 
+                product_price = #{item.productPrice}, 
+                quantity = #{item.quantity}, 
+                subtotal = #{item.subtotal}, 
+                category_id = #{item.categoryId}, 
+                category_name = #{item.categoryName}, 
+                updated_at = #{item.updatedAt} 
+            WHERE id = #{item.id}
+        </foreach>
+    </update>
+
+    <!-- 批量更新购物车项数量 -->
+    <update id="batchUpdateQuantity">
+        <foreach collection="cartItems" item="item" index="index" separator=";">
+            UPDATE cart_items 
+            SET quantity = #{item.quantity}, 
+                subtotal = #{item.productPrice} * #{item.quantity}, 
+                updated_at = NOW() 
+            WHERE id = #{item.id}
+        </foreach>
+    </update>
+
+    <!-- 批量更新购物车项选中状态 -->
+    <update id="batchUpdateSelected">
+        <foreach collection="cartItems" item="item" index="index" separator=";">
+            UPDATE cart_items 
+            SET selected = #{item.selected}, 
+                updated_at = NOW() 
+            WHERE id = #{item.id}
+        </foreach>
+    </update>
+
+    <!-- 批量删除购物车项 -->
+    <delete id="batchDelete">
+        <foreach collection="cartItemIds" item="cartItemId" index="index" separator=";">
+            DELETE FROM cart_items WHERE id = #{cartItemId}
+        </foreach>
+    </delete>
+
+    <!-- 批量软删除购物车项 -->
+    <update id="batchSoftDelete">
+        <foreach collection="cartItemIds" item="cartItemId" index="index" separator=";">
+            UPDATE cart_items 
+            SET status = 0, 
+                updated_at = NOW() 
+            WHERE id = #{cartItemId}
+        </foreach>
+    </update>
+
+</mapper>

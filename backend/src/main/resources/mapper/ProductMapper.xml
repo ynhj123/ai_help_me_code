@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.ecommerce.mapper.ProductMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="ProductResultMap" type="com.example.ecommerce.entity.Product">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="description" property="description"/>
+        <result column="category_id" property="categoryId"/>
+        <result column="price" property="price"/>
+        <result column="market_price" property="marketPrice"/>
+        <result column="cost_price" property="costPrice"/>
+        <result column="sku" property="sku"/>
+        <result column="barcode" property="barcode"/>
+        <result column="image" property="image"/>
+        <result column="gallery" property="gallery"/>
+        <result column="detail" property="detail"/>
+        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <!-- 插入商品 -->
+    <insert id="insert" parameterType="com.example.ecommerce.entity.Product" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO products (name, description, category_id, price, market_price, cost_price, sku, barcode, image, gallery, detail, status, created_at, updated_at)
+        VALUES (#{name}, #{description}, #{categoryId}, #{price}, #{marketPrice}, #{costPrice}, #{sku}, #{barcode}, #{image}, #{gallery}, #{detail}, #{status}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <!-- 根据ID查询商品 -->
+    <select id="selectById" parameterType="long" resultMap="ProductResultMap">
+        SELECT * FROM products WHERE id = #{id}
+    </select>
+
+    <!-- 根据SKU查询商品 -->
+    <select id="selectBySku" parameterType="string" resultMap="ProductResultMap">
+        SELECT * FROM products WHERE sku = #{sku}
+    </select>
+
+    <!-- 查询商品列表 -->
+    <select id="selectAll" resultMap="ProductResultMap">
+        SELECT * FROM products 
+        <where>
+            <if test="name != null and name != ''">
+                AND name LIKE CONCAT('%', #{name}, '%')
+            </if>
+            <if test="categoryId != null">
+                AND category_id = #{categoryId}
+            </if>
+            <if test="sku != null and sku != ''">
+                AND sku = #{sku}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        <if test="sortBy != null and sortBy != ''">
+            ORDER BY ${sortBy} ${sortOrder}
+        </if>
+        <if test="sortBy == null or sortBy == ''">
+            ORDER BY id DESC
+        </if>
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 查询商品总数 -->
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM products 
+        <where>
+            <if test="name != null and name != ''">
+                AND name LIKE CONCAT('%', #{name}, '%')
+            </if>
+            <if test="categoryId != null">
+                AND category_id = #{categoryId}
+            </if>
+            <if test="sku != null and sku != ''">
+                AND sku = #{sku}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <!-- 更新商品 -->
+    <update id="update" parameterType="com.example.ecommerce.entity.Product">
+        UPDATE products
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="categoryId != null">category_id = #{categoryId},</if>
+            <if test="price != null">price = #{price},</if>
+            <if test="marketPrice != null">market_price = #{marketPrice},</if>
+            <if test="costPrice != null">cost_price = #{costPrice},</if>
+            <if test="sku != null">sku = #{sku},</if>
+            <if test="barcode != null">barcode = #{barcode},</if>
+            <if test="image != null">image = #{image},</if>
+            <if test="gallery != null">gallery = #{gallery},</if>
+            <if test="detail != null">detail = #{detail},</if>
+            <if test="status != null">status = #{status},</if>
+            updated_at = #{updatedAt}
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 根据ID删除商品 -->
+    <delete id="deleteById" parameterType="long">
+        DELETE FROM products WHERE id = #{id}
+    </delete>
+
+    <!-- 根据分类ID查询商品数量 -->
+    <select id="countByCategoryId" resultType="int">
+        SELECT COUNT(*) FROM products WHERE category_id = #{categoryId}
+    </select>
+
+    <!-- 查询推荐商品 -->
+    <select id="findRecommendedProducts" resultMap="ProductResultMap">
+        SELECT * FROM products 
+        WHERE status = 1
+        ORDER BY created_at DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询热销商品 -->
+    <select id="findHotProducts" resultMap="ProductResultMap">
+        SELECT * FROM products 
+        WHERE status = 1
+        ORDER BY 
+            CASE 
+                WHEN created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN 1
+                ELSE 2
+            END,
+            id DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询新品商品 -->
+    <select id="findNewProducts" resultMap="ProductResultMap">
+        SELECT * FROM products 
+        WHERE status = 1
+        AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        ORDER BY created_at DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询特价商品 -->
+    <select id="findDiscountProducts" resultMap="ProductResultMap">
+        SELECT * FROM products 
+        WHERE status = 1
+        AND market_price > price
+        AND market_price - price > 0
+        ORDER BY (market_price - price) DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询分类商品 -->
+    <select id="findProductsByCategory" resultMap="ProductResultMap">
+        SELECT * FROM products 
+        WHERE category_id = #{categoryId} AND status = 1
+        ORDER BY created_at DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 查询分类商品数量 -->
+    <select id="countProductsByCategory" resultType="int">
+        SELECT COUNT(*) FROM products 
+        WHERE category_id = #{categoryId} AND status = 1
+    </select>
+
+    <!-- 查询相似商品 -->
+    <select id="findSimilarProducts" resultMap="ProductResultMap">
+        SELECT * FROM products 
+        WHERE category_id = #{categoryId} AND id != #{productId} AND status = 1
+        ORDER BY created_at DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 搜索商品 -->
+    <select id="searchProducts" resultMap="ProductResultMap">
+        SELECT * FROM products 
+        WHERE status = 1
+        AND (
+            name LIKE CONCAT('%', #{keyword}, '%')
+            OR description LIKE CONCAT('%', #{keyword}, '%')
+            OR sku LIKE CONCAT('%', #{keyword}, '%')
+            OR barcode LIKE CONCAT('%', #{keyword}, '%')
+        )
+        ORDER BY 
+            CASE 
+                WHEN name LIKE CONCAT('#{keyword}', '%') THEN 1
+                WHEN name LIKE CONCAT('%', '#{keyword}', '%') THEN 2
+                ELSE 3
+            END,
+            id DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 搜索商品总数 -->
+    <select id="countSearchProducts" resultType="int">
+        SELECT COUNT(*) FROM products 
+        WHERE status = 1
+        AND (
+            name LIKE CONCAT('%', #{keyword}, '%')
+            OR description LIKE CONCAT('%', #{keyword}, '%')
+            OR sku LIKE CONCAT('%', #{keyword}, '%')
+            OR barcode LIKE CONCAT('%', #{keyword}, '%')
+        )
+    </select>
+
+    <!-- 查询价格区间商品 -->
+    <select id="findProductsByPriceRange" resultMap="ProductResultMap">
+        SELECT * FROM products 
+        WHERE status = 1
+        AND price BETWEEN #{minPrice} AND #{maxPrice}
+        ORDER BY price ASC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 查询价格区间商品数量 -->
+    <select id="countProductsByPriceRange" resultType="int">
+        SELECT COUNT(*) FROM products 
+        WHERE status = 1
+        AND price BETWEEN #{minPrice} AND #{maxPrice}
+    </select>
+
+    <!-- 查询库存不足商品 -->
+    <select id="findLowStockProducts" resultMap="ProductResultMap">
+        SELECT p.*, pi.quantity as stock_quantity
+        FROM products p
+        LEFT JOIN product_inventory pi ON p.id = pi.product_id
+        WHERE p.status = 1
+        AND pi.quantity <= #{threshold}
+        ORDER BY pi.quantity ASC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 查询库存不足商品数量 -->
+    <select id="countLowStockProducts" resultType="int">
+        SELECT COUNT(*) 
+        FROM products p
+        LEFT JOIN product_inventory pi ON p.id = pi.product_id
+        WHERE p.status = 1
+        AND pi.quantity <= #{threshold}
+    </select>
+
+    <!-- 查询商品统计信息 -->
+    <select id="findProductStats" resultType="map">
+        SELECT
+            COUNT(*) as total_products,
+            COUNT(CASE WHEN status = 1 THEN 1 END) as active_products,
+            COUNT(CASE WHEN status = 0 THEN 1 END) as inactive_products,
+            AVG(price) as average_price,
+            MIN(price) as min_price,
+            MAX(price) as max_price
+        FROM products
+    </select>
+
+    <!-- 查询商品分类统计 -->
+    <select id="findProductCategoryStats" resultType="map">
+        SELECT 
+            c.id as category_id,
+            c.name as category_name,
+            COUNT(p.id) as product_count,
+            AVG(p.price) as average_price
+        FROM categories c
+        LEFT JOIN products p ON c.id = p.category_id AND p.status = 1
+        GROUP BY c.id, c.name
+        ORDER BY product_count DESC
+    </select>
+
+    <!-- 查询商品价格分布 -->
+    <select id="findPriceDistribution" resultType="map">
+        SELECT 
+            CASE 
+                WHEN price < 50 THEN '0-50'
+                WHEN price BETWEEN 50 AND 100 THEN '50-100'
+                WHEN price BETWEEN 100 AND 200 THEN '100-200'
+                WHEN price BETWEEN 200 AND 500 THEN '200-500'
+                WHEN price BETWEEN 500 AND 1000 THEN '500-1000'
+                ELSE '1000+'
+            END as price_range,
+            COUNT(*) as product_count
+        FROM products
+        WHERE status = 1
+        GROUP BY price_range
+        ORDER BY 
+            CASE price_range
+                WHEN '0-50' THEN 1
+                WHEN '50-100' THEN 2
+                WHEN '100-200' THEN 3
+                WHEN '200-500' THEN 4
+                WHEN '500-1000' THEN 5
+                ELSE 6
+            END
+    </select>
+
+</mapper>

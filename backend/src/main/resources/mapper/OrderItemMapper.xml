@@ -1,0 +1,705 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.ecommerce.mapper.OrderItemMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="OrderItemResultMap" type="com.example.ecommerce.entity.OrderItem">
+        <id column="id" property="id"/>
+        <result column="order_id" property="orderId"/>
+        <result column="product_id" property="productId"/>
+        <result column="product_name" property="productName"/>
+        <result column="product_image" property="productImage"/>
+        <result column="product_sku" property="productSku"/>
+        <result column="product_price" property="productPrice"/>
+        <result column="quantity" property="quantity"/>
+        <result column="subtotal" property="subtotal"/>
+        <result column="category_id" property="categoryId"/>
+        <result column="category_name" property="categoryName"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <!-- 插入订单商品 -->
+    <insert id="insert" parameterType="com.example.ecommerce.entity.OrderItem" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO order_items (order_id, product_id, product_name, product_image, product_sku, 
+                                product_price, quantity, subtotal, category_id, category_name, 
+                                created_at, updated_at)
+        VALUES (#{orderId}, #{productId}, #{productName}, #{productImage}, #{productSku}, 
+                #{productPrice}, #{quantity}, #{subtotal}, #{categoryId}, #{categoryName}, 
+                #{createdAt}, #{updatedAt})
+    </insert>
+
+    <!-- 批量插入订单商品 -->
+    <insert id="batchInsert">
+        INSERT INTO order_items (order_id, product_id, product_name, product_image, product_sku, 
+                                product_price, quantity, subtotal, category_id, category_name, 
+                                created_at, updated_at)
+        VALUES 
+        <foreach collection="orderItems" item="item" separator=",">
+            (#{item.orderId}, #{item.productId}, #{item.productName}, #{item.productImage}, #{item.productSku}, 
+             #{item.productPrice}, #{item.quantity}, #{item.subtotal}, #{item.categoryId}, #{item.categoryName}, 
+             #{item.createdAt}, #{item.updatedAt})
+        </foreach>
+    </insert>
+
+    <!-- 根据ID查询订单商品 -->
+    <select id="selectById" parameterType="long" resultMap="OrderItemResultMap">
+        SELECT * FROM order_items WHERE id = #{id}
+    </select>
+
+    <!-- 根据订单ID查询订单商品列表 -->
+    <select id="selectByOrderId" resultMap="OrderItemResultMap">
+        SELECT * FROM order_items WHERE order_id = #{orderId} ORDER BY id ASC
+    </select>
+
+    <!-- 查询订单商品列表（分页） -->
+    <select id="selectPage" resultMap="OrderItemResultMap">
+        SELECT * FROM order_items ORDER BY id DESC LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 查询订单商品列表（带条件） -->
+    <select id="selectAll" resultMap="OrderItemResultMap">
+        SELECT * FROM order_items WHERE 1=1
+        <if test="orderId != null">
+            AND order_id = #{orderId}
+        </if>
+        <if test="productId != null">
+            AND product_id = #{productId}
+        </if>
+        <if test="categoryId != null">
+            AND category_id = #{categoryId}
+        </if>
+        <if test="startTime != null">
+            AND created_at >= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND created_at <= #{endTime}
+        </if>
+        ORDER BY id DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 查询订单商品总数 -->
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM order_items WHERE 1=1
+        <if test="orderId != null">
+            AND order_id = #{orderId}
+        </if>
+        <if test="productId != null">
+            AND product_id = #{productId}
+        </if>
+        <if test="categoryId != null">
+            AND category_id = #{categoryId}
+        </if>
+        <if test="startTime != null">
+            AND created_at >= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND created_at <= #{endTime}
+        </if>
+    </select>
+
+    <!-- 更新订单商品 -->
+    <update id="update" parameterType="com.example.ecommerce.entity.OrderItem">
+        UPDATE order_items
+        <set>
+            <if test="orderId != null">order_id = #{orderId},</if>
+            <if test="productId != null">product_id = #{productId},</if>
+            <if test="productName != null">product_name = #{productName},</if>
+            <if test="productImage != null">product_image = #{productImage},</if>
+            <if test="productSku != null">product_sku = #{productSku},</if>
+            <if test="productPrice != null">product_price = #{productPrice},</if>
+            <if test="quantity != null">quantity = #{quantity},</if>
+            <if test="subtotal != null">subtotal = #{subtotal},</if>
+            <if test="categoryId != null">category_id = #{categoryId},</if>
+            <if test="categoryName != null">category_name = #{categoryName},</if>
+            updated_at = #{updatedAt}
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 根据订单ID删除订单商品 -->
+    <delete id="deleteByOrderId" parameterType="long">
+        DELETE FROM order_items WHERE order_id = #{orderId}
+    </delete>
+
+    <!-- 根据ID删除订单商品 -->
+    <delete id="deleteById" parameterType="long">
+        DELETE FROM order_items WHERE id = #{id}
+    </delete>
+
+    <!-- 根据商品ID删除订单商品 -->
+    <delete id="deleteByProductId" parameterType="long">
+        DELETE FROM order_items WHERE product_id = #{productId}
+    </delete>
+
+    <!-- 根据分类ID删除订单商品 -->
+    <delete id="deleteByCategoryId" parameterType="long">
+        DELETE FROM order_items WHERE category_id = #{categoryId}
+    </delete>
+
+    <!-- 批量更新订单商品 -->
+    <update id="batchUpdate">
+        <foreach collection="orderItems" item="item" index="index" separator=";">
+            UPDATE order_items 
+            SET product_name = #{item.productName}, 
+                product_image = #{item.productImage}, 
+                product_sku = #{item.productSku}, 
+                product_price = #{item.productPrice}, 
+                quantity = #{item.quantity}, 
+                subtotal = #{item.subtotal}, 
+                category_id = #{item.categoryId}, 
+                category_name = #{item.categoryName}, 
+                updated_at = #{item.updatedAt} 
+            WHERE id = #{item.id}
+        </foreach>
+    </update>
+
+    <!-- 根据订单ID批量更新订单商品 -->
+    <update id="batchUpdateByOrderId">
+        <foreach collection="orderItems" item="item" index="index" separator=";">
+            UPDATE order_items 
+            SET product_name = #{item.productName}, 
+                product_image = #{item.productImage}, 
+                product_sku = #{item.productSku}, 
+                product_price = #{item.productPrice}, 
+                quantity = #{item.quantity}, 
+                subtotal = #{item.subtotal}, 
+                category_id = #{item.categoryId}, 
+                category_name = #{item.categoryName}, 
+                updated_at = #{item.updatedAt} 
+            WHERE id = #{item.id} AND order_id = #{orderId}
+        </foreach>
+    </update>
+
+    <!-- 计算订单商品总金额 -->
+    <select id="calculateTotalAmount" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(subtotal), 0) 
+        FROM order_items 
+        WHERE order_id = #{orderId}
+    </select>
+
+    <!-- 计算订单商品总数量 -->
+    <select id="calculateTotalQuantity" resultType="int">
+        SELECT COALESCE(SUM(quantity), 0) 
+        FROM order_items 
+        WHERE order_id = #{orderId}
+    </select>
+
+    <!-- 检查订单商品是否存在 -->
+    <select id="existsById" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM order_items WHERE id = #{id}
+    </select>
+
+    <!-- 检查订单商品是否属于指定订单 -->
+    <select id="belongsToOrder" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM order_items WHERE id = #{id} AND order_id = #{orderId}
+    </select>
+
+    <!-- 查询订单商品统计 -->
+    <select id="findOrderItemStats" resultType="map">
+        SELECT 
+            COUNT(*) as total_items,
+            COUNT(DISTINCT product_id) as unique_products,
+            COALESCE(SUM(quantity), 0) as total_quantity,
+            COALESCE(SUM(subtotal), 0) as total_amount,
+            COALESCE(AVG(product_price), 0) as average_price,
+            COALESCE(AVG(quantity), 0) as average_quantity,
+            COALESCE(AVG(subtotal), 0) as average_subtotal
+        FROM order_items
+        WHERE order_id = #{orderId}
+    </select>
+
+    <!-- 查询订单商品分类统计 -->
+    <select id="findOrderItemCategoryStats" resultType="map">
+        SELECT 
+            c.id as category_id,
+            c.name as category_name,
+            COUNT(oi.id) as item_count,
+            SUM(oi.quantity) as total_quantity,
+            COALESCE(SUM(oi.subtotal), 0) as total_amount
+        FROM order_items oi
+        INNER JOIN products p ON oi.product_id = p.id
+        INNER JOIN categories c ON p.category_id = c.id
+        WHERE oi.order_id = #{orderId}
+        GROUP BY c.id, c.name
+        ORDER BY total_amount DESC
+    </select>
+
+    <!-- 查询订单商品价格分布 -->
+    <select id="findOrderItemPriceDistribution" resultType="map">
+        SELECT 
+            CASE 
+                WHEN product_price < 50 THEN '0-50'
+                WHEN product_price BETWEEN 50 AND 100 THEN '50-100'
+                WHEN product_price BETWEEN 100 AND 200 THEN '100-200'
+                WHEN product_price BETWEEN 200 AND 500 THEN '200-500'
+                WHEN product_price BETWEEN 500 AND 1000 THEN '500-1000'
+                ELSE '1000+'
+            END as price_range,
+            COUNT(*) as item_count,
+            SUM(quantity) as total_quantity,
+            COALESCE(SUM(subtotal), 0) as total_amount
+        FROM order_items
+        WHERE order_id = #{orderId}
+        GROUP BY price_range
+        ORDER BY 
+            CASE price_range
+                WHEN '0-50' THEN 1
+                WHEN '50-100' THEN 2
+                WHEN '100-200' THEN 3
+                WHEN '200-500' THEN 4
+                WHEN '500-1000' THEN 5
+                ELSE 6
+            END
+    </select>
+
+    <!-- 查询订单商品数量分布 -->
+    <select id="findOrderItemQuantityDistribution" resultType="map">
+        SELECT 
+            CASE 
+                WHEN quantity = 1 THEN '1'
+                WHEN quantity = 2 THEN '2'
+                WHEN quantity = 3 THEN '3'
+                WHEN quantity BETWEEN 4 AND 5 THEN '4-5'
+                ELSE '6+'
+            END as quantity_range,
+            COUNT(*) as item_count,
+            SUM(quantity) as total_quantity,
+            COALESCE(SUM(subtotal), 0) as total_amount
+        FROM order_items
+        WHERE order_id = #{orderId}
+        GROUP BY quantity_range
+        ORDER BY 
+            CASE quantity_range
+                WHEN '1' THEN 1
+                WHEN '2' THEN 2
+                WHEN '3' THEN 3
+                WHEN '4-5' THEN 4
+                ELSE 5
+            END
+    </select>
+
+    <!-- 查询订单商品SKU分布 -->
+    <select id="findOrderItemSkuDistribution" resultType="map">
+        SELECT 
+            product_sku as sku,
+            product_name as product_name,
+            COUNT(*) as order_count,
+            SUM(quantity) as total_quantity,
+            COALESCE(SUM(subtotal), 0) as total_amount
+        FROM order_items
+        WHERE order_id = #{orderId}
+        GROUP BY product_sku, product_name
+        ORDER BY total_quantity DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询订单商品图片分布 -->
+    <select id="findOrderItemImageDistribution" resultType="map">
+        SELECT 
+            product_image as product_image,
+            COUNT(*) as order_count,
+            SUM(quantity) as total_quantity,
+            COALESCE(SUM(subtotal), 0) as total_amount
+        FROM order_items
+        WHERE order_id = #{orderId}
+        AND product_image IS NOT NULL AND product_image != ''
+        GROUP BY product_image
+        ORDER BY total_quantity DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询订单商品品牌分布 -->
+    <select id="findOrderItemBrandDistribution" resultType="map">
+        SELECT 
+            p.brand as brand_name,
+            COUNT(oi.id) as item_count,
+            SUM(oi.quantity) as total_quantity,
+            COALESCE(SUM(oi.subtotal), 0) as total_amount
+        FROM order_items oi
+        INNER JOIN products p ON oi.product_id = p.id
+        WHERE oi.order_id = #{orderId}
+        AND p.brand IS NOT NULL AND p.brand != ''
+        GROUP BY p.brand
+        ORDER BY total_quantity DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询订单商品创建时间分布 -->
+    <select id="findOrderItemCreationTimeDistribution" resultType="map">
+        SELECT 
+            DATE(created_at) as date,
+            COUNT(*) as item_count,
+            SUM(quantity) as total_quantity,
+            COALESCE(SUM(subtotal), 0) as total_amount
+        FROM order_items
+        WHERE order_id = #{orderId}
+        GROUP BY DATE(created_at)
+        ORDER BY date DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询订单商品更新时间分布 -->
+    <select id="findOrderItemUpdateTimeDistribution" resultType="map">
+        SELECT 
+            DATE(updated_at) as date,
+            COUNT(*) as item_count,
+            SUM(quantity) as total_quantity,
+            COALESCE(SUM(subtotal), 0) as total_amount
+        FROM order_items
+        WHERE order_id = #{orderId}
+        GROUP BY DATE(updated_at)
+        ORDER BY date DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询订单商品综合统计 -->
+    <select id="findOrderItemComprehensiveStats" resultType="map">
+        SELECT 
+            COUNT(*) as total_items,
+            COUNT(DISTINCT product_id) as unique_products,
+            COALESCE(SUM(quantity), 0) as total_quantity,
+            COALESCE(SUM(subtotal), 0) as total_amount,
+            COALESCE(AVG(product_price), 0) as average_price,
+            COALESCE(MIN(product_price), 0) as min_price,
+            COALESCE(MAX(product_price), 0) as max_price,
+            COALESCE(AVG(quantity), 0) as average_quantity,
+            COALESCE(AVG(subtotal), 0) as average_subtotal,
+            COALESCE(SUM(CASE WHEN quantity > 1 THEN 1 ELSE 0 END), 0) as multi_quantity_items,
+            COALESCE(SUM(CASE WHEN quantity = 1 THEN 1 ELSE 0 END), 0) as single_quantity_items
+        FROM order_items
+        WHERE order_id = #{orderId}
+    </select>
+
+    <!-- 查询订单商品价格区间统计 -->
+    <select id="findOrderItemPriceRangeStats" resultType="map">
+        SELECT 
+            CASE 
+                WHEN product_price < 50 THEN '0-50'
+                WHEN product_price BETWEEN 50 AND 100 THEN '50-100'
+                WHEN product_price BETWEEN 100 AND 200 THEN '100-200'
+                WHEN product_price BETWEEN 200 AND 500 THEN '200-500'
+                WHEN product_price BETWEEN 500 AND 1000 THEN '500-1000'
+                ELSE '1000+'
+            END as price_range,
+            COUNT(*) as item_count,
+            SUM(quantity) as total_quantity,
+            COALESCE(SUM(subtotal), 0) as total_amount,
+            ROUND(SUM(subtotal) * 100.0 / (SELECT COALESCE(SUM(subtotal), 0) FROM order_items WHERE order_id = #{orderId}), 2) as percentage
+        FROM order_items
+        WHERE order_id = #{orderId}
+        GROUP BY price_range
+        ORDER BY 
+            CASE price_range
+                WHEN '0-50' THEN 1
+                WHEN '50-100' THEN 2
+                WHEN '100-200' THEN 3
+                WHEN '200-500' THEN 4
+                WHEN '500-1000' THEN 5
+                ELSE 6
+            END
+    </select>
+
+    <!-- 查询订单商品数量区间统计 -->
+    <select id="findOrderItemQuantityRangeStats" resultType="map">
+        SELECT 
+            CASE 
+                WHEN quantity = 1 THEN '1'
+                WHEN quantity = 2 THEN '2'
+                WHEN quantity = 3 THEN '3'
+                WHEN quantity BETWEEN 4 AND 5 THEN '4-5'
+                ELSE '6+'
+            END as quantity_range,
+            COUNT(*) as item_count,
+            SUM(quantity) as total_quantity,
+            COALESCE(SUM(subtotal), 0) as total_amount,
+            ROUND(SUM(subtotal) * 100.0 / (SELECT COALESCE(SUM(subtotal), 0) FROM order_items WHERE order_id = #{orderId}), 2) as percentage
+        FROM order_items
+        WHERE order_id = #{orderId}
+        GROUP BY quantity_range
+        ORDER BY 
+            CASE quantity_range
+                WHEN '1' THEN 1
+                WHEN '2' THEN 2
+                WHEN '3' THEN 3
+                WHEN '4-5' THEN 4
+                ELSE 5
+            END
+    </select>
+
+    <!-- 查询订单商品SKU统计 -->
+    <select id="findOrderItemSkuStats" resultType="map">
+        SELECT 
+            product_sku as sku,
+            product_name as product_name,
+            COUNT(*) as order_count,
+            SUM(quantity) as total_quantity,
+            COALESCE(SUM(subtotal), 0) as total_amount,
+            ROUND(SUM(subtotal) * 100.0 / (SELECT COALESCE(SUM(subtotal), 0) FROM order_items WHERE order_id = #{orderId}), 2) as percentage
+        FROM order_items
+        WHERE order_id = #{orderId}
+        GROUP BY product_sku, product_name
+        ORDER BY total_quantity DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询订单商品分类统计 -->
+    <select id="findOrderItemCategoryStats" resultType="map">
+        SELECT 
+            c.id as category_id,
+            c.name as category_name,
+            COUNT(oi.id) as item_count,
+            SUM(oi.quantity) as total_quantity,
+            COALESCE(SUM(oi.subtotal), 0) as total_amount,
+            ROUND(SUM(oi.subtotal) * 100.0 / (SELECT COALESCE(SUM(subtotal), 0) FROM order_items WHERE order_id = #{orderId}), 2) as percentage
+        FROM order_items oi
+        INNER JOIN products p ON oi.product_id = p.id
+        INNER JOIN categories c ON p.category_id = c.id
+        WHERE oi.order_id = #{orderId}
+        GROUP BY c.id, c.name
+        ORDER BY total_amount DESC
+    </select>
+
+    <!-- 查询订单商品品牌统计 -->
+    <select id="findOrderItemBrandStats" resultType="map">
+        SELECT 
+            p.brand as brand_name,
+            COUNT(oi.id) as item_count,
+            SUM(oi.quantity) as total_quantity,
+            COALESCE(SUM(oi.subtotal), 0) as total_amount,
+            ROUND(SUM(oi.subtotal) * 100.0 / (SELECT COALESCE(SUM(subtotal), 0) FROM order_items WHERE order_id = #{orderId}), 2) as percentage
+        FROM order_items oi
+        INNER JOIN products p ON oi.product_id = p.id
+        WHERE oi.order_id = #{orderId}
+        AND p.brand IS NOT NULL AND p.brand != ''
+        GROUP BY p.brand
+        ORDER BY total_quantity DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询订单商品图片统计 -->
+    <select id="findOrderItemImageStats" resultType="map">
+        SELECT 
+            product_image as product_image,
+            COUNT(*) as order_count,
+            SUM(quantity) as total_quantity,
+            COALESCE(SUM(subtotal), 0) as total_amount,
+            ROUND(SUM(subtotal) * 100.0 / (SELECT COALESCE(SUM(subtotal), 0) FROM order_items WHERE order_id = #{orderId}), 2) as percentage
+        FROM order_items
+        WHERE order_id = #{orderId}
+        AND product_image IS NOT NULL AND product_image != ''
+        GROUP BY product_image
+        ORDER BY total_quantity DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询订单商品时间统计 -->
+    <select id="findOrderItemTimeStats" resultType="map">
+        SELECT 
+            DATE(created_at) as date,
+            COUNT(*) as item_count,
+            SUM(quantity) as total_quantity,
+            COALESCE(SUM(subtotal), 0) as total_amount,
+            ROUND(SUM(subtotal) * 100.0 / (SELECT COALESCE(SUM(subtotal), 0) FROM order_items WHERE order_id = #{orderId}), 2) as percentage
+        FROM order_items
+        WHERE order_id = #{orderId}
+        GROUP BY DATE(created_at)
+        ORDER BY date DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询订单商品综合分析 -->
+    <select id="findOrderItemComprehensiveAnalysis" resultType="map">
+        SELECT 
+            COUNT(*) as total_items,
+            COUNT(DISTINCT product_id) as unique_products,
+            COALESCE(SUM(quantity), 0) as total_quantity,
+            COALESCE(SUM(subtotal), 0) as total_amount,
+            COALESCE(AVG(product_price), 0) as average_price,
+            COALESCE(MIN(product_price), 0) as min_price,
+            COALESCE(MAX(product_price), 0) as max_price,
+            COALESCE(AVG(quantity), 0) as average_quantity,
+            COALESCE(AVG(subtotal), 0) as average_subtotal,
+            COALESCE(SUM(CASE WHEN quantity > 1 THEN 1 ELSE 0 END), 0) as multi_quantity_items,
+            COALESCE(SUM(CASE WHEN quantity = 1 THEN 1 ELSE 0 END), 0) as single_quantity_items,
+            COALESCE(SUM(CASE WHEN product_price < 50 THEN 1 ELSE 0 END), 0) as low_price_items,
+            COALESCE(SUM(CASE WHEN product_price BETWEEN 50 AND 100 THEN 1 ELSE 0 END), 0) as medium_price_items,
+            COALESCE(SUM(CASE WHEN product_price > 100 THEN 1 ELSE 0 END), 0) as high_price_items
+        FROM order_items
+        WHERE order_id = #{orderId}
+    </select>
+
+    <!-- 查询订单商品热销排行 -->
+    <select id="findOrderItemHotRanking" resultType="map">
+        SELECT 
+            p.id as product_id,
+            p.name as product_name,
+            p.image as product_image,
+            COUNT(oi.id) as order_count,
+            SUM(oi.quantity) as total_quantity,
+            COALESCE(SUM(oi.subtotal), 0) as total_amount,
+            RANK() OVER (ORDER BY SUM(oi.quantity) DESC) as quantity_rank,
+            RANK() OVER (ORDER BY COALESCE(SUM(oi.subtotal), 0) DESC) as amount_rank
+        FROM order_items oi
+        INNER JOIN products p ON oi.product_id = p.id
+        WHERE oi.order_id = #{orderId}
+        GROUP BY p.id, p.name, p.image
+        ORDER BY total_quantity DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询订单商品分类排行 -->
+    <select id="findOrderItemCategoryRanking" resultType="map">
+        SELECT 
+            c.id as category_id,
+            c.name as category_name,
+            COUNT(oi.id) as item_count,
+            SUM(oi.quantity) as total_quantity,
+            COALESCE(SUM(oi.subtotal), 0) as total_amount,
+            RANK() OVER (ORDER BY SUM(oi.quantity) DESC) as quantity_rank,
+            RANK() OVER (ORDER BY COALESCE(SUM(oi.subtotal), 0) DESC) as amount_rank
+        FROM order_items oi
+        INNER JOIN products p ON oi.product_id = p.id
+        INNER JOIN categories c ON p.category_id = c.id
+        WHERE oi.order_id = #{orderId}
+        GROUP BY c.id, c.name
+        ORDER BY total_quantity DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询订单商品品牌排行 -->
+    <select id="findOrderItemBrandRanking" resultType="map">
+        SELECT 
+            p.brand as brand_name,
+            COUNT(oi.id) as item_count,
+            SUM(oi.quantity) as total_quantity,
+            COALESCE(SUM(oi.subtotal), 0) as total_amount,
+            RANK() OVER (ORDER BY SUM(oi.quantity) DESC) as quantity_rank,
+            RANK() OVER (ORDER BY COALESCE(SUM(oi.subtotal), 0) DESC) as amount_rank
+        FROM order_items oi
+        INNER JOIN products p ON oi.product_id = p.id
+        WHERE oi.order_id = #{orderId}
+        AND p.brand IS NOT NULL AND p.brand != ''
+        GROUP BY p.brand
+        ORDER BY total_quantity DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询订单商品SKU排行 -->
+    <select id="findOrderItemSkuRanking" resultType="map">
+        SELECT 
+            p.sku as sku,
+            p.name as product_name,
+            COUNT(oi.id) as order_count,
+            SUM(oi.quantity) as total_quantity,
+            COALESCE(SUM(oi.subtotal), 0) as total_amount,
+            RANK() OVER (ORDER BY SUM(oi.quantity) DESC) as quantity_rank,
+            RANK() OVER (ORDER BY COALESCE(SUM(oi.subtotal), 0) DESC) as amount_rank
+        FROM order_items oi
+        INNER JOIN products p ON oi.product_id = p.id
+        WHERE oi.order_id = #{orderId}
+        GROUP BY p.sku, p.name
+        ORDER BY total_quantity DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询订单商品图片排行 -->
+    <select id="findOrderItemImageRanking" resultType="map">
+        SELECT 
+            p.image as product_image,
+            COUNT(oi.id) as order_count,
+            SUM(oi.quantity) as total_quantity,
+            COALESCE(SUM(oi.subtotal), 0) as total_amount,
+            RANK() OVER (ORDER BY SUM(oi.quantity) DESC) as quantity_rank,
+            RANK() OVER (ORDER BY COALESCE(SUM(oi.subtotal), 0) DESC) as amount_rank
+        FROM order_items oi
+        INNER JOIN products p ON oi.product_id = p.id
+        WHERE oi.order_id = #{orderId}
+        AND p.image IS NOT NULL AND p.image != ''
+        GROUP BY p.image
+        ORDER BY total_quantity DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询订单商品价格排行 -->
+    <select id="findOrderItemPriceRanking" resultType="map">
+        SELECT 
+            p.id as product_id,
+            p.name as product_name,
+            p.price as product_price,
+            COUNT(oi.id) as order_count,
+            SUM(oi.quantity) as total_quantity,
+            COALESCE(SUM(oi.subtotal), 0) as total_amount,
+            RANK() OVER (ORDER BY p.price DESC) as price_rank,
+            RANK() OVER (ORDER BY SUM(oi.quantity) DESC) as quantity_rank,
+            RANK() OVER (ORDER BY COALESCE(SUM(oi.subtotal), 0) DESC) as amount_rank
+        FROM order_items oi
+        INNER JOIN products p ON oi.product_id = p.id
+        WHERE oi.order_id = #{orderId}
+        GROUP BY p.id, p.name, p.price
+        ORDER BY p.price DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询订单商品数量排行 -->
+    <select id="findOrderItemQuantityRanking" resultType="map">
+        SELECT 
+            p.id as product_id,
+            p.name as product_name,
+            COUNT(oi.id) as order_count,
+            SUM(oi.quantity) as total_quantity,
+            COALESCE(SUM(oi.subtotal), 0) as total_amount,
+            RANK() OVER (ORDER BY SUM(oi.quantity) DESC) as quantity_rank,
+            RANK() OVER (ORDER BY COALESCE(SUM(oi.subtotal), 0) DESC) as amount_rank
+        FROM order_items oi
+        INNER JOIN products p ON oi.product_id = p.id
+        WHERE oi.order_id = #{orderId}
+        GROUP BY p.id, p.name
+        ORDER BY total_quantity DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询订单商品金额排行 -->
+    <select id="findOrderItemAmountRanking" resultType="map">
+        SELECT 
+            p.id as product_id,
+            p.name as product_name,
+            COUNT(oi.id) as order_count,
+            SUM(oi.quantity) as total_quantity,
+            COALESCE(SUM(oi.subtotal), 0) as total_amount,
+            RANK() OVER (ORDER BY COALESCE(SUM(oi.subtotal), 0) DESC) as amount_rank,
+            RANK() OVER (ORDER BY SUM(oi.quantity) DESC) as quantity_rank
+        FROM order_items oi
+        INNER JOIN products p ON oi.product_id = p.id
+        WHERE oi.order_id = #{orderId}
+        GROUP BY p.id, p.name
+        ORDER BY total_amount DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询订单商品综合排行 -->
+    <select id="findOrderItemComprehensiveRanking" resultType="map">
+        SELECT 
+            p.id as product_id,
+            p.name as product_name,
+            p.image as product_image,
+            p.price as product_price,
+            COUNT(oi.id) as order_count,
+            SUM(oi.quantity) as total_quantity,
+            COALESCE(SUM(oi.subtotal), 0) as total_amount,
+            RANK() OVER (ORDER BY SUM(oi.quantity) DESC) as quantity_rank,
+            RANK() OVER (ORDER BY COALESCE(SUM(oi.subtotal), 0) DESC) as amount_rank,
+            RANK() OVER (ORDER BY p.price DESC) as price_rank,
+            (RANK() OVER (ORDER BY SUM(oi.quantity) DESC) + 
+             RANK() OVER (ORDER BY COALESCE(SUM(oi.subtotal), 0) DESC) + 
+             RANK() OVER (ORDER BY p.price DESC)) as comprehensive_rank
+        FROM order_items oi
+        INNER JOIN products p ON oi.product_id = p.id
+        WHERE oi.order_id = #{orderId}
+        GROUP BY p.id, p.name, p.image, p.price
+        ORDER BY comprehensive_rank
+        LIMIT #{limit}
+    </select>
+
+</mapper>

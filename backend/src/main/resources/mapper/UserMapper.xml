@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.ecommerce.mapper.UserMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="UserResultMap" type="com.example.ecommerce.entity.User">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+        <result column="email" property="email"/>
+        <result column="phone" property="phone"/>
+        <result column="nickname" property="nickname"/>
+        <result column="avatar" property="avatar"/>
+        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result column="role" property="role" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <!-- 插入用户 -->
+    <insert id="insert" parameterType="com.example.ecommerce.entity.User" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO users (username, password, email, phone, nickname, avatar, status, role, created_at, updated_at)
+        VALUES (#{username}, #{password}, #{email}, #{phone}, #{nickname}, #{avatar}, #{status}, #{role}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <!-- 根据ID查询用户 -->
+    <select id="selectById" parameterType="long" resultMap="UserResultMap">
+        SELECT * FROM users WHERE id = #{id}
+    </select>
+
+    <!-- 根据用户名查询用户 -->
+    <select id="findByUsername" parameterType="string" resultMap="UserResultMap">
+        SELECT * FROM users WHERE username = #{username}
+    </select>
+
+    <!-- 根据邮箱查询用户 -->
+    <select id="findByEmail" parameterType="string" resultMap="UserResultMap">
+        SELECT * FROM users WHERE email = #{email}
+    </select>
+
+    <!-- 查询用户列表 -->
+    <select id="selectAll" resultMap="UserResultMap">
+        SELECT * FROM users ORDER BY id LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 条件查询用户列表 -->
+    <select id="selectAllWithConditions" resultMap="UserResultMap">
+        SELECT * FROM users
+        <where>
+            <if test="username != null and username != ''">
+                AND username LIKE CONCAT('%', #{username}, '%')
+            </if>
+            <if test="email != null and email != ''">
+                AND email LIKE CONCAT('%', #{email}, '%')
+            </if>
+            <if test="phone != null and phone != ''">
+                AND phone LIKE CONCAT('%', #{phone}, '%')
+            </if>
+            <if test="nickname != null and nickname != ''">
+                AND nickname LIKE CONCAT('%', #{nickname}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="role != null">
+                AND role = #{role}
+            </if>
+            <if test="startTime != null">
+                AND created_at >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND created_at <= #{endTime}
+            </if>
+        </where>
+        <if test="sortBy != null and sortBy != ''">
+            ORDER BY ${sortBy} ${sortOrder}
+        </if>
+        <if test="sortBy == null or sortBy == ''">
+            ORDER BY id DESC
+        </if>
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 查询用户总数 -->
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*) FROM users
+    </select>
+
+    <!-- 条件查询用户总数 -->
+    <select id="countAllWithConditions" resultType="int">
+        SELECT COUNT(*) FROM users
+        <where>
+            <if test="username != null and username != ''">
+                AND username LIKE CONCAT('%', #{username}, '%')
+            </if>
+            <if test="email != null and email != ''">
+                AND email LIKE CONCAT('%', #{email}, '%')
+            </if>
+            <if test="phone != null and phone != ''">
+                AND phone LIKE CONCAT('%', #{phone}, '%')
+            </if>
+            <if test="nickname != null and nickname != ''">
+                AND nickname LIKE CONCAT('%', #{nickname}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="role != null">
+                AND role = #{role}
+            </if>
+            <if test="startTime != null">
+                AND created_at >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND created_at <= #{endTime}
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据用户名查询用户数量 -->
+    <select id="countByUsername" resultType="int">
+        SELECT COUNT(*) FROM users WHERE username = #{username}
+    </select>
+
+    <!-- 根据邮箱查询用户数量 -->
+    <select id="countByEmail" resultType="int">
+        SELECT COUNT(*) FROM users WHERE email = #{email}
+    </select>
+
+    <!-- 根据手机号查询用户数量 -->
+    <select id="countByPhone" resultType="int">
+        SELECT COUNT(*) FROM users WHERE phone = #{phone}
+    </select>
+
+    <!-- 根据用户名和ID查询用户数量（排除当前用户） -->
+    <select id="countByUsernameExcludingId" resultType="int">
+        SELECT COUNT(*) FROM users WHERE username = #{username} AND id != #{id}
+    </select>
+
+    <!-- 根据邮箱和ID查询用户数量（排除当前用户） -->
+    <select id="countByEmailExcludingId" resultType="int">
+        SELECT COUNT(*) FROM users WHERE email = #{email} AND id != #{id}
+    </select>
+
+    <!-- 根据手机号和ID查询用户数量（排除当前用户） -->
+    <select id="countByPhoneExcludingId" resultType="int">
+        SELECT COUNT(*) FROM users WHERE phone = #{phone} AND id != #{id}
+    </select>
+
+    <!-- 根据状态查询用户数量 -->
+    <select id="countByStatus" resultType="int">
+        SELECT COUNT(*) FROM users WHERE status = #{status}
+    </select>
+
+    <!-- 根据角色查询用户数量 -->
+    <select id="countByRole" resultType="int">
+        SELECT COUNT(*) FROM users WHERE role = #{role}
+    </select>
+
+    <!-- 根据创建时间范围查询用户数量 -->
+    <select id="countByCreateTimeRange" resultType="int">
+        SELECT COUNT(*) FROM users
+        WHERE created_at BETWEEN #{startTime} AND #{endTime}
+    </select>
+
+    <!-- 查询最近注册的用户 -->
+    <select id="findRecentUsers" resultMap="UserResultMap">
+        SELECT * FROM users
+        ORDER BY created_at DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询活跃用户 -->
+    <select id="findActiveUsers" resultMap="UserResultMap">
+        SELECT * FROM users
+        WHERE status = 1
+        ORDER BY last_login_at DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询管理员用户 -->
+    <select id="findAdminUsers" resultMap="UserResultMap">
+        SELECT * FROM users
+        WHERE role = 'ADMIN'
+        ORDER BY created_at DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询普通用户 -->
+    <select id="findRegularUsers" resultMap="UserResultMap">
+        SELECT * FROM users
+        WHERE role = 'USER'
+        ORDER BY created_at DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询禁用用户 -->
+    <select id="findDisabledUsers" resultMap="UserResultMap">
+        SELECT * FROM users
+        WHERE status = 0
+        ORDER BY updated_at DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询用户名列表 -->
+    <select id="findUsernames" resultType="string">
+        SELECT username FROM users
+        WHERE status = 1
+        ORDER BY username
+    </select>
+
+    <!-- 查询邮箱列表 -->
+    <select id="findEmails" resultType="string">
+        SELECT email FROM users
+        WHERE status = 1
+        AND email IS NOT NULL
+        AND email != ''
+        ORDER BY email
+    </select>
+
+    <!-- 查询手机号列表 -->
+    <select id="findPhones" resultType="string">
+        SELECT phone FROM users
+        WHERE status = 1
+        AND phone IS NOT NULL
+        AND phone != ''
+        ORDER BY phone
+    </select>
+
+    <!-- 查询昵称列表 -->
+    <select id="findNicknames" resultType="string">
+        SELECT nickname FROM users
+        WHERE status = 1
+        AND nickname IS NOT NULL
+        AND nickname != ''
+        ORDER BY nickname
+    </select>
+
+    <!-- 查询用户角色分布 -->
+    <select id="findRoleDistribution" resultType="map">
+        SELECT role, COUNT(*) as count
+        FROM users
+        GROUP BY role
+    </select>
+
+    <!-- 查询用户状态分布 -->
+    <select id="findStatusDistribution" resultType="map">
+        SELECT status, COUNT(*) as count
+        FROM users
+        GROUP BY status
+    </select>
+
+    <!-- 查询用户注册趋势（按天） -->
+    <select id="findRegistrationTrendByDay" resultType="map">
+        SELECT DATE(created_at) as date, COUNT(*) as count
+        FROM users
+        WHERE created_at BETWEEN #{startTime} AND #{endTime}
+        GROUP BY DATE(created_at)
+        ORDER BY date
+    </select>
+
+    <!-- 查询用户注册趋势（按月） -->
+    <select id="findRegistrationTrendByMonth" resultType="map">
+        SELECT DATE_FORMAT(created_at, '%Y-%m') as month, COUNT(*) as count
+        FROM users
+        WHERE created_at BETWEEN #{startTime} AND #{endTime}
+        GROUP BY DATE_FORMAT(created_at, '%Y-%m')
+        ORDER BY month
+    </select>
+
+    <!-- 查询用户注册趋势（按年） -->
+    <select id="findRegistrationTrendByYear" resultType="map">
+        SELECT DATE_FORMAT(created_at, '%Y') as year, COUNT(*) as count
+        FROM users
+        WHERE created_at BETWEEN #{startTime} AND #{endTime}
+        GROUP BY DATE_FORMAT(created_at, '%Y')
+        ORDER BY year
+    </select>
+
+    <!-- 查询用户活跃度统计 -->
+    <select id="findUserActivityStats" resultType="map">
+        SELECT
+            COUNT(*) as total_users,
+            COUNT(CASE WHEN status = 1 THEN 1 END) as active_users,
+            COUNT(CASE WHEN status = 0 THEN 1 END) as inactive_users,
+            COUNT(CASE WHEN role = 'ADMIN' THEN 1 END) as admin_users,
+            COUNT(CASE WHEN role = 'USER' THEN 1 END) as regular_users
+        FROM users
+    </select>
+
+    <!-- 更新用户 -->
+    <update id="update" parameterType="com.example.ecommerce.entity.User">
+        UPDATE users
+        <set>
+            <if test="username != null">username = #{username},</if>
+            <if test="password != null">password = #{password},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="nickname != null">nickname = #{nickname},</if>
+            <if test="avatar != null">avatar = #{avatar},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="role != null">role = #{role},</if>
+            updated_at = #{updatedAt}
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 根据ID删除用户 -->
+    <delete id="deleteById" parameterType="long">
+        DELETE FROM users WHERE id = #{id}
+    </delete>
+
+</mapper>

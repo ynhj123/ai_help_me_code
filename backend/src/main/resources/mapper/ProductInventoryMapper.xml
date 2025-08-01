@@ -1,0 +1,631 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.ecommerce.mapper.ProductInventoryMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="ProductInventoryResultMap" type="com.example.ecommerce.entity.ProductInventory">
+        <id column="id" property="id"/>
+        <result column="product_id" property="productId"/>
+        <result column="quantity" property="quantity"/>
+        <result column="reserved_quantity" property="reservedQuantity"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <!-- 插入商品库存 -->
+    <insert id="insert" parameterType="com.example.ecommerce.entity.ProductInventory" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO product_inventory (product_id, quantity, reserved_quantity, created_at, updated_at)
+        VALUES (#{productId}, #{quantity}, #{reservedQuantity}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <!-- 批量插入商品库存 -->
+    <insert id="batchInsert">
+        INSERT INTO product_inventory (product_id, quantity, reserved_quantity, created_at, updated_at)
+        VALUES 
+        <foreach collection="productInventories" item="inventory" separator=",">
+            (#{inventory.productId}, #{inventory.quantity}, #{inventory.reservedQuantity}, #{inventory.createdAt}, #{inventory.updatedAt})
+        </foreach>
+    </insert>
+
+    <!-- 根据ID查询商品库存 -->
+    <select id="selectById" parameterType="long" resultMap="ProductInventoryResultMap">
+        SELECT * FROM product_inventory WHERE id = #{id}
+    </select>
+
+    <!-- 根据商品ID查询商品库存 -->
+    <select id="selectByProductId" parameterType="long" resultMap="ProductInventoryResultMap">
+        SELECT * FROM product_inventory WHERE product_id = #{productId}
+    </select>
+
+    <!-- 查询商品库存列表 -->
+    <select id="selectAll" resultMap="ProductInventoryResultMap">
+        SELECT * FROM product_inventory ORDER BY id DESC
+    </select>
+
+    <!-- 查询商品库存列表（分页） -->
+    <select id="selectPage" resultMap="ProductInventoryResultMap">
+        SELECT * FROM product_inventory ORDER BY id DESC LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 查询商品库存列表（带条件） -->
+    <select id="selectAllWithConditions" resultMap="ProductInventoryResultMap">
+        SELECT * FROM product_inventory WHERE 1=1
+        <if test="productId != null">
+            AND product_id = #{productId}
+        </if>
+        <if test="minQuantity != null">
+            AND quantity >= #{minQuantity}
+        </if>
+        <if test="maxQuantity != null">
+            AND quantity <= #{maxQuantity}
+        </if>
+        <if test="minReservedQuantity != null">
+            AND reserved_quantity >= #{minReservedQuantity}
+        </if>
+        <if test="maxReservedQuantity != null">
+            AND reserved_quantity <= #{maxReservedQuantity}
+        </if>
+        <if test="startTime != null">
+            AND created_at >= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND created_at <= #{endTime}
+        </if>
+        ORDER BY id DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 查询商品库存总数 -->
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM product_inventory WHERE 1=1
+        <if test="productId != null">
+            AND product_id = #{productId}
+        </if>
+        <if test="minQuantity != null">
+            AND quantity >= #{minQuantity}
+        </if>
+        <if test="maxQuantity != null">
+            AND quantity <= #{maxQuantity}
+        </if>
+        <if test="minReservedQuantity != null">
+            AND reserved_quantity >= #{minReservedQuantity}
+        </if>
+        <if test="maxReservedQuantity != null">
+            AND reserved_quantity <= #{maxReservedQuantity}
+        </if>
+        <if test="startTime != null">
+            AND created_at >= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND created_at <= #{endTime}
+        </if>
+    </select>
+
+    <!-- 更新商品库存 -->
+    <update id="update" parameterType="com.example.ecommerce.entity.ProductInventory">
+        UPDATE product_inventory
+        <set>
+            <if test="productId != null">product_id = #{productId},</if>
+            <if test="quantity != null">quantity = #{quantity},</if>
+            <if test="reservedQuantity != null">reserved_quantity = #{reservedQuantity},</if>
+            updated_at = #{updatedAt}
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 根据商品ID更新商品库存 -->
+    <update id="updateByProductId">
+        UPDATE product_inventory 
+        SET quantity = #{quantity}, 
+            reserved_quantity = #{reservedQuantity}, 
+            updated_at = NOW() 
+        WHERE product_id = #{productId}
+    </update>
+
+    <!-- 更新库存数量 -->
+    <update id="updateQuantity">
+        UPDATE product_inventory 
+        SET quantity = #{quantity}, 
+            updated_at = NOW() 
+        WHERE product_id = #{productId}
+    </update>
+
+    <!-- 增加库存数量 -->
+    <update id="increaseQuantity">
+        UPDATE product_inventory 
+        SET quantity = quantity + #{quantity}, 
+            updated_at = NOW() 
+        WHERE product_id = #{productId}
+    </update>
+
+    <!-- 减少库存数量 -->
+    <update id="decreaseQuantity">
+        UPDATE product_inventory 
+        SET quantity = quantity - #{quantity}, 
+            updated_at = NOW() 
+        WHERE product_id = #{productId} AND quantity >= #{quantity}
+    </update>
+
+    <!-- 更新预留库存数量 -->
+    <update id="updateReservedQuantity">
+        UPDATE product_inventory 
+        SET reserved_quantity = #{reservedQuantity}, 
+            updated_at = NOW() 
+        WHERE product_id = #{productId}
+    </update>
+
+    <!-- 增加预留库存数量 -->
+    <update id="increaseReservedQuantity">
+        UPDATE product_inventory 
+        SET reserved_quantity = reserved_quantity + #{reservedQuantity}, 
+            updated_at = NOW() 
+        WHERE product_id = #{productId}
+    </update>
+
+    <!-- 减少预留库存数量 -->
+    <update id="decreaseReservedQuantity">
+        UPDATE product_inventory 
+        SET reserved_quantity = reserved_quantity - #{reservedQuantity}, 
+            updated_at = NOW() 
+        WHERE product_id = #{productId} AND reserved_quantity >= #{reservedQuantity}
+    </update>
+
+    <!-- 根据ID删除商品库存 -->
+    <delete id="deleteById" parameterType="long">
+        DELETE FROM product_inventory WHERE id = #{id}
+    </delete>
+
+    <!-- 根据商品ID删除商品库存 -->
+    <delete id="deleteByProductId" parameterType="long">
+        DELETE FROM product_inventory WHERE product_id = #{productId}
+    </delete>
+
+    <!-- 检查商品库存是否存在 -->
+    <select id="existsById" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM product_inventory WHERE id = #{id}
+    </select>
+
+    <!-- 检查商品库存是否存在 -->
+    <select id="existsByProductId" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM product_inventory WHERE product_id = #{productId}
+    </select>
+
+    <!-- 检查商品库存是否充足 -->
+    <select id="isStockSufficient" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM product_inventory 
+        WHERE product_id = #{productId} AND quantity >= #{quantity}
+    </select>
+
+    <!-- 检查商品预留库存是否充足 -->
+    <select id="isReservedStockSufficient" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM product_inventory 
+        WHERE product_id = #{productId} AND reserved_quantity >= #{reservedQuantity}
+    </select>
+
+    <!-- 获取商品库存数量 -->
+    <select id="getQuantity" resultType="int">
+        SELECT quantity FROM product_inventory WHERE product_id = #{productId}
+    </select>
+
+    <!-- 获取商品预留库存数量 -->
+    <select id="getReservedQuantity" resultType="int">
+        SELECT reserved_quantity FROM product_inventory WHERE product_id = #{productId}
+    </select>
+
+    <!-- 获取商品可用库存数量 -->
+    <select id="getAvailableQuantity" resultType="int">
+        SELECT quantity - reserved_quantity FROM product_inventory WHERE product_id = #{productId}
+    </select>
+
+    <!-- 查询商品库存统计 -->
+    <select id="findInventoryStats" resultType="map">
+        SELECT 
+            COUNT(*) as total_products,
+            SUM(quantity) as total_quantity,
+            SUM(reserved_quantity) as total_reserved_quantity,
+            SUM(quantity - reserved_quantity) as total_available_quantity,
+            AVG(quantity) as average_quantity,
+            AVG(reserved_quantity) as average_reserved_quantity,
+            AVG(quantity - reserved_quantity) as average_available_quantity,
+            MIN(quantity) as min_quantity,
+            MAX(quantity) as max_quantity,
+            MIN(reserved_quantity) as min_reserved_quantity,
+            MAX(reserved_quantity) as max_reserved_quantity,
+            MIN(quantity - reserved_quantity) as min_available_quantity,
+            MAX(quantity - reserved_quantity) as max_available_quantity
+        FROM product_inventory
+    </select>
+
+    <!-- 查询商品库存分布 -->
+    <select id="findInventoryDistribution" resultType="map">
+        SELECT 
+            CASE 
+                WHEN quantity < 10 THEN '0-10'
+                WHEN quantity BETWEEN 10 AND 50 THEN '10-50'
+                WHEN quantity BETWEEN 50 AND 100 THEN '50-100'
+                WHEN quantity BETWEEN 100 AND 500 THEN '100-500'
+                WHEN quantity BETWEEN 500 AND 1000 THEN '500-1000'
+                ELSE '1000+'
+            END as quantity_range,
+            COUNT(*) as product_count,
+            SUM(quantity) as total_quantity,
+            SUM(reserved_quantity) as total_reserved_quantity,
+            SUM(quantity - reserved_quantity) as total_available_quantity
+        FROM product_inventory
+        GROUP BY quantity_range
+        ORDER BY 
+            CASE quantity_range
+                WHEN '0-10' THEN 1
+                WHEN '10-50' THEN 2
+                WHEN '50-100' THEN 3
+                WHEN '100-500' THEN 4
+                WHEN '500-1000' THEN 5
+                ELSE 6
+            END
+    </select>
+
+    <!-- 查询商品预留库存分布 -->
+    <select id="findReservedInventoryDistribution" resultType="map">
+        SELECT 
+            CASE 
+                WHEN reserved_quantity = 0 THEN '0'
+                WHEN reserved_quantity BETWEEN 1 AND 10 THEN '1-10'
+                WHEN reserved_quantity BETWEEN 11 AND 50 THEN '11-50'
+                WHEN reserved_quantity BETWEEN 51 AND 100 THEN '51-100'
+                WHEN reserved_quantity BETWEEN 101 AND 500 THEN '101-500'
+                ELSE '500+'
+            END as reserved_quantity_range,
+            COUNT(*) as product_count,
+            SUM(quantity) as total_quantity,
+            SUM(reserved_quantity) as total_reserved_quantity,
+            SUM(quantity - reserved_quantity) as total_available_quantity
+        FROM product_inventory
+        GROUP BY reserved_quantity_range
+        ORDER BY 
+            CASE reserved_quantity_range
+                WHEN '0' THEN 1
+                WHEN '1-10' THEN 2
+                WHEN '11-50' THEN 3
+                WHEN '51-100' THEN 4
+                WHEN '101-500' THEN 5
+                ELSE 6
+            END
+    </select>
+
+    <!-- 查询商品可用库存分布 -->
+    <select id="findAvailableInventoryDistribution" resultType="map">
+        SELECT 
+            CASE 
+                WHEN quantity - reserved_quantity < 0 THEN '负库存'
+                WHEN quantity - reserved_quantity = 0 THEN '0'
+                WHEN quantity - reserved_quantity BETWEEN 1 AND 10 THEN '1-10'
+                WHEN quantity - reserved_quantity BETWEEN 11 AND 50 THEN '11-50'
+                WHEN quantity - reserved_quantity BETWEEN 51 AND 100 THEN '51-100'
+                WHEN quantity - reserved_quantity BETWEEN 101 AND 500 THEN '101-500'
+                ELSE '500+'
+            END as available_quantity_range,
+            COUNT(*) as product_count,
+            SUM(quantity) as total_quantity,
+            SUM(reserved_quantity) as total_reserved_quantity,
+            SUM(quantity - reserved_quantity) as total_available_quantity
+        FROM product_inventory
+        GROUP BY available_quantity_range
+        ORDER BY 
+            CASE available_quantity_range
+                WHEN '负库存' THEN 1
+                WHEN '0' THEN 2
+                WHEN '1-10' THEN 3
+                WHEN '11-50' THEN 4
+                WHEN '51-100' THEN 5
+                WHEN '101-500' THEN 6
+                ELSE 7
+            END
+    </select>
+
+    <!-- 查询低库存商品 -->
+    <select id="findLowStockProducts" resultMap="ProductInventoryResultMap">
+        SELECT pi.*, p.name as product_name, p.sku as product_sku
+        FROM product_inventory pi
+        INNER JOIN products p ON pi.product_id = p.id
+        WHERE pi.quantity <= #{threshold}
+        ORDER BY pi.quantity ASC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 查询低库存商品数量 -->
+    <select id="countLowStockProducts" resultType="int">
+        SELECT COUNT(*) FROM product_inventory WHERE quantity <= #{threshold}
+    </select>
+
+    <!-- 查询无库存商品 -->
+    <select id="findOutOfStockProducts" resultMap="ProductInventoryResultMap">
+        SELECT pi.*, p.name as product_name, p.sku as product_sku
+        FROM product_inventory pi
+        INNER JOIN products p ON pi.product_id = p.id
+        WHERE pi.quantity = 0
+        ORDER BY pi.updated_at DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 查询无库存商品数量 -->
+    <select id="countOutOfStockProducts" resultType="int">
+        SELECT COUNT(*) FROM product_inventory WHERE quantity = 0
+    </select>
+
+    <!-- 查询负库存商品 -->
+    <select id="findNegativeStockProducts" resultMap="ProductInventoryResultMap">
+        SELECT pi.*, p.name as product_name, p.sku as product_sku
+        FROM product_inventory pi
+        INNER JOIN products p ON pi.product_id = p.id
+        WHERE pi.quantity < pi.reserved_quantity
+        ORDER BY (pi.quantity - pi.reserved_quantity) ASC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 查询负库存商品数量 -->
+    <select id="countNegativeStockProducts" resultType="int">
+        SELECT COUNT(*) FROM product_inventory WHERE quantity < reserved_quantity
+    </select>
+
+    <!-- 查询高库存商品 -->
+    <select id="findHighStockProducts" resultMap="ProductInventoryResultMap">
+        SELECT pi.*, p.name as product_name, p.sku as product_sku
+        FROM product_inventory pi
+        INNER JOIN products p ON pi.product_id = p.id
+        WHERE pi.quantity >= #{threshold}
+        ORDER BY pi.quantity DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 查询高库存商品数量 -->
+    <select id="countHighStockProducts" resultType="int">
+        SELECT COUNT(*) FROM product_inventory WHERE quantity >= #{threshold}
+    </select>
+
+    <!-- 查询库存周转率统计 -->
+    <select id="findInventoryTurnoverStats" resultType="map">
+        SELECT 
+            COUNT(*) as total_products,
+            SUM(quantity) as total_quantity,
+            SUM(reserved_quantity) as total_reserved_quantity,
+            SUM(quantity - reserved_quantity) as total_available_quantity,
+            AVG(quantity) as average_quantity,
+            AVG(reserved_quantity) as average_reserved_quantity,
+            AVG(quantity - reserved_quantity) as average_available_quantity,
+            COUNT(CASE WHEN quantity = 0 THEN 1 END) as out_of_stock_products,
+            COUNT(CASE WHEN quantity < 10 THEN 1 END) as low_stock_products,
+            COUNT(CASE WHEN quantity > 1000 THEN 1 END) as high_stock_products,
+            COUNT(CASE WHEN quantity < reserved_quantity THEN 1 END) as negative_stock_products
+        FROM product_inventory
+    </select>
+
+    <!-- 查询库存预警统计 -->
+    <select id="findInventoryWarningStats" resultType="map">
+        SELECT 
+            COUNT(*) as total_products,
+            SUM(quantity) as total_quantity,
+            SUM(reserved_quantity) as total_reserved_quantity,
+            SUM(quantity - reserved_quantity) as total_available_quantity,
+            COUNT(CASE WHEN quantity = 0 THEN 1 END) as out_of_stock_count,
+            COUNT(CASE WHEN quantity < 10 THEN 1 END) as low_stock_count,
+            COUNT(CASE WHEN quantity < reserved_quantity THEN 1 END) as negative_stock_count,
+            ROUND(COUNT(CASE WHEN quantity = 0 THEN 1 END) * 100.0 / COUNT(*), 2) as out_of_stock_percentage,
+            ROUND(COUNT(CASE WHEN quantity < 10 THEN 1 END) * 100.0 / COUNT(*), 2) as low_stock_percentage,
+            ROUND(COUNT(CASE WHEN quantity < reserved_quantity THEN 1 END) * 100.0 / COUNT(*), 2) as negative_stock_percentage
+        FROM product_inventory
+    </select>
+
+    <!-- 查询库存趋势统计 -->
+    <select id="findInventoryTrendStats" resultType="map">
+        SELECT 
+            DATE(created_at) as date,
+            COUNT(*) as product_count,
+            SUM(quantity) as total_quantity,
+            SUM(reserved_quantity) as total_reserved_quantity,
+            SUM(quantity - reserved_quantity) as total_available_quantity
+        FROM product_inventory
+        WHERE created_at BETWEEN #{startTime} AND #{endTime}
+        GROUP BY DATE(created_at)
+        ORDER BY date
+    </select>
+
+    <!-- 查询库存更新趋势统计 -->
+    <select id="findInventoryUpdateTrendStats" resultType="map">
+        SELECT 
+            DATE(updated_at) as date,
+            COUNT(*) as update_count,
+            SUM(quantity) as total_quantity,
+            SUM(reserved_quantity) as total_reserved_quantity,
+            SUM(quantity - reserved_quantity) as total_available_quantity
+        FROM product_inventory
+        WHERE updated_at BETWEEN #{startTime} AND #{endTime}
+        GROUP BY DATE(updated_at)
+        ORDER BY date
+    </select>
+
+    <!-- 查询库存分类统计 -->
+    <select id="findInventoryCategoryStats" resultType="map">
+        SELECT 
+            c.id as category_id,
+            c.name as category_name,
+            COUNT(pi.id) as product_count,
+            SUM(pi.quantity) as total_quantity,
+            SUM(pi.reserved_quantity) as total_reserved_quantity,
+            SUM(pi.quantity - pi.reserved_quantity) as total_available_quantity,
+            AVG(pi.quantity) as average_quantity,
+            AVG(pi.reserved_quantity) as average_reserved_quantity,
+            AVG(pi.quantity - pi.reserved_quantity) as average_available_quantity
+        FROM product_inventory pi
+        INNER JOIN products p ON pi.product_id = p.id
+        INNER JOIN categories c ON p.category_id = c.id
+        GROUP BY c.id, c.name
+        ORDER BY total_quantity DESC
+    </select>
+
+    <!-- 查询库存商品统计 -->
+    <select id="findInventoryProductStats" resultType="map">
+        SELECT 
+            p.id as product_id,
+            p.name as product_name,
+            p.sku as product_sku,
+            pi.quantity as stock_quantity,
+            pi.reserved_quantity as reserved_quantity,
+            pi.quantity - pi.reserved_quantity as available_quantity,
+            p.price as product_price,
+            p.status as product_status
+        FROM product_inventory pi
+        INNER JOIN products p ON pi.product_id = p.id
+        ORDER BY pi.quantity ASC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询库存热销商品统计 -->
+    <select id="findInventoryHotProductStats" resultType="map">
+        SELECT 
+            p.id as product_id,
+            p.name as product_name,
+            p.sku as product_sku,
+            pi.quantity as stock_quantity,
+            pi.reserved_quantity as reserved_quantity,
+            pi.quantity - pi.reserved_quantity as available_quantity,
+            p.price as product_price,
+            COUNT(oi.id) as order_count,
+            SUM(oi.quantity) as sold_quantity,
+            COALESCE(SUM(oi.subtotal), 0) as total_amount
+        FROM product_inventory pi
+        INNER JOIN products p ON pi.product_id = p.id
+        LEFT JOIN order_items oi ON pi.product_id = oi.product_id
+        WHERE oi.created_at BETWEEN #{startTime} AND #{endTime}
+        GROUP BY pi.id, p.id, p.name, p.sku, pi.quantity, pi.reserved_quantity, p.price
+        ORDER BY sold_quantity DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询库存滞销商品统计 -->
+    <select id="findInventorySlowMovingProductStats" resultType="map">
+        SELECT 
+            p.id as product_id,
+            p.name as product_name,
+            p.sku as product_sku,
+            pi.quantity as stock_quantity,
+            pi.reserved_quantity as reserved_quantity,
+            pi.quantity - pi.reserved_quantity as available_quantity,
+            p.price as product_price,
+            COUNT(oi.id) as order_count,
+            SUM(oi.quantity) as sold_quantity,
+            COALESCE(SUM(oi.subtotal), 0) as total_amount
+        FROM product_inventory pi
+        INNER JOIN products p ON pi.product_id = p.id
+        LEFT JOIN order_items oi ON pi.product_id = oi.product_id
+        WHERE oi.created_at BETWEEN #{startTime} AND #{endTime}
+        GROUP BY pi.id, p.id, p.name, p.sku, pi.quantity, pi.reserved_quantity, p.price
+        ORDER BY sold_quantity ASC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询库存综合统计 -->
+    <select id="findInventoryComprehensiveStats" resultType="map">
+        SELECT 
+            COUNT(*) as total_products,
+            SUM(quantity) as total_quantity,
+            SUM(reserved_quantity) as total_reserved_quantity,
+            SUM(quantity - reserved_quantity) as total_available_quantity,
+            AVG(quantity) as average_quantity,
+            AVG(reserved_quantity) as average_reserved_quantity,
+            AVG(quantity - reserved_quantity) as average_available_quantity,
+            MIN(quantity) as min_quantity,
+            MAX(quantity) as max_quantity,
+            MIN(reserved_quantity) as min_reserved_quantity,
+            MAX(reserved_quantity) as max_reserved_quantity,
+            MIN(quantity - reserved_quantity) as min_available_quantity,
+            MAX(quantity - reserved_quantity) as max_available_quantity,
+            COUNT(CASE WHEN quantity = 0 THEN 1 END) as out_of_stock_products,
+            COUNT(CASE WHEN quantity < 10 THEN 1 END) as low_stock_products,
+            COUNT(CASE WHEN quantity > 1000 THEN 1 END) as high_stock_products,
+            COUNT(CASE WHEN quantity < reserved_quantity THEN 1 END) as negative_stock_products,
+            ROUND(COUNT(CASE WHEN quantity = 0 THEN 1 END) * 100.0 / COUNT(*), 2) as out_of_stock_percentage,
+            ROUND(COUNT(CASE WHEN quantity < 10 THEN 1 END) * 100.0 / COUNT(*), 2) as low_stock_percentage,
+            ROUND(COUNT(CASE WHEN quantity > 1000 THEN 1 END) * 100.0 / COUNT(*), 2) as high_stock_percentage,
+            ROUND(COUNT(CASE WHEN quantity < reserved_quantity THEN 1 END) * 100.0 / COUNT(*), 2) as negative_stock_percentage
+        FROM product_inventory
+    </select>
+
+    <!-- 批量更新商品库存 -->
+    <update id="batchUpdate">
+        <foreach collection="productInventories" item="inventory" index="index" separator=";">
+            UPDATE product_inventory 
+            SET quantity = #{inventory.quantity}, 
+                reserved_quantity = #{inventory.reservedQuantity}, 
+                updated_at = #{inventory.updatedAt} 
+            WHERE id = #{inventory.id}
+        </foreach>
+    </update>
+
+    <!-- 批量更新商品库存数量 -->
+    <update id="batchUpdateQuantity">
+        <foreach collection="productInventories" item="inventory" index="index" separator=";">
+            UPDATE product_inventory 
+            SET quantity = #{inventory.quantity}, 
+                updated_at = NOW() 
+            WHERE id = #{inventory.id}
+        </foreach>
+    </update>
+
+    <!-- 批量更新商品预留库存数量 -->
+    <update id="batchUpdateReservedQuantity">
+        <foreach collection="productInventories" item="inventory" index="index" separator=";">
+            UPDATE product_inventory 
+            SET reserved_quantity = #{inventory.reservedQuantity}, 
+                updated_at = NOW() 
+            WHERE id = #{inventory.id}
+        </foreach>
+    </update>
+
+    <!-- 批量增加商品库存数量 -->
+    <update id="batchIncreaseQuantity">
+        <foreach collection="productInventories" item="inventory" index="index" separator=";">
+            UPDATE product_inventory 
+            SET quantity = quantity + #{inventory.quantity}, 
+                updated_at = NOW() 
+            WHERE id = #{inventory.id}
+        </foreach>
+    </update>
+
+    <!-- 批量减少商品库存数量 -->
+    <update id="batchDecreaseQuantity">
+        <foreach collection="productInventories" item="inventory" index="index" separator=";">
+            UPDATE product_inventory 
+            SET quantity = quantity - #{inventory.quantity}, 
+                updated_at = NOW() 
+            WHERE id = #{inventory.id} AND quantity >= #{inventory.quantity}
+        </foreach>
+    </update>
+
+    <!-- 批量增加商品预留库存数量 -->
+    <update id="batchIncreaseReservedQuantity">
+        <foreach collection="productInventories" item="inventory" index="index" separator=";">
+            UPDATE product_inventory 
+            SET reserved_quantity = reserved_quantity + #{inventory.reservedQuantity}, 
+                updated_at = NOW() 
+            WHERE id = #{inventory.id}
+        </foreach>
+    </update>
+
+    <!-- 批量减少商品预留库存数量 -->
+    <update id="batchDecreaseReservedQuantity">
+        <foreach collection="productInventories" item="inventory" index="index" separator=";">
+            UPDATE product_inventory 
+            SET reserved_quantity = reserved_quantity - #{inventory.reservedQuantity}, 
+                updated_at = NOW() 
+            WHERE id = #{inventory.id} AND reserved_quantity >= #{inventory.reservedQuantity}
+        </foreach>
+    </update>
+
+    <!-- 批量删除商品库存 -->
+    <delete id="batchDelete">
+        <foreach collection="inventoryIds" item="inventoryId" index="index" separator=";">
+            DELETE FROM product_inventory WHERE id = #{inventoryId}
+        </foreach>
+    </delete>
+
+</mapper>
