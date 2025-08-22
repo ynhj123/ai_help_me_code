@@ -9,7 +9,7 @@
         <result column="description" property="description"/>
         <result column="parent_id" property="parentId"/>
         <result column="sort_order" property="sortOrder"/>
-        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result column="status" property="status" javaType="com.example.ecommerce.enums.CategoryStatus"/>
         <result column="created_at" property="createdAt"/>
         <result column="updated_at" property="updatedAt"/>
     </resultMap>

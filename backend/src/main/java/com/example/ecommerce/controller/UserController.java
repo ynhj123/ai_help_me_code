@@ -3,7 +3,6 @@ package com.example.ecommerce.controller;
 import com.example.ecommerce.dto.UserDTO;
 import com.example.ecommerce.service.UserService;
 import com.example.ecommerce.vo.ResultVO;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -14,14 +13,23 @@ import java.util.List;
 
 /**
  * 用户控制器
+ * 使用构造器注入依赖，避免@Autowired字段注入
  */
 @RestController
 @RequestMapping("/api/users")
 @Validated
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+
+    /**
+     * 构造器注入
+     *
+     * @param userService 用户服务
+     */
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     /**
      * 获取当前用户信息

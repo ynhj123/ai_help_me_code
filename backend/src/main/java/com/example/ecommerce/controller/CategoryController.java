@@ -4,7 +4,6 @@ import com.example.ecommerce.dto.CategoryDTO;
 import com.example.ecommerce.dto.CategoryTreeNodeDTO;
 import com.example.ecommerce.service.CategoryService;
 import com.example.ecommerce.vo.ResultVO;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -15,14 +14,23 @@ import java.util.List;
 
 /**
  * 分类控制器
+ * 使用构造器注入依赖，避免@Autowired字段注入
  */
 @RestController
 @RequestMapping("/api/categories")
 @Validated
 public class CategoryController {
 
-    @Autowired
-    private CategoryService categoryService;
+    private final CategoryService categoryService;
+
+    /**
+     * 构造器注入
+     *
+     * @param categoryService 分类服务
+     */
+    public CategoryController(CategoryService categoryService) {
+        this.categoryService = categoryService;
+    }
 
     /**
      * 获取分类列表

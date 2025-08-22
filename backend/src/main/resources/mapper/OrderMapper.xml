@@ -15,9 +15,9 @@
         <result column="shipping_fee" property="shippingFee"/>
         <result column="discount_amount" property="discountAmount"/>
         <result column="paid_amount" property="paidAmount"/>
-        <result column="payment_method" property="paymentMethod" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result column="payment_method" property="paymentMethod" javaType="com.example.ecommerce.enums.PaymentMethod"/>
         <result column="paid_at" property="paidAt"/>
-        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result column="status" property="status" javaType="com.example.ecommerce.enums.OrderStatus"/>
         <result column="remark" property="remark"/>
         <result column="logistics_company" property="logisticsCompany"/>
         <result column="tracking_number" property="trackingNumber"/>

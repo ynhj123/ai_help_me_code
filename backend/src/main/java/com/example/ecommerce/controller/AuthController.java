@@ -5,21 +5,29 @@ import com.example.ecommerce.dto.RegisterRequest;
 import com.example.ecommerce.service.UserService;
 import com.example.ecommerce.vo.ResultVO;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 
 /**
  * 认证控制器
+ * 使用构造器注入依赖，避免@Autowired字段注入
  */
 @RestController
 @RequestMapping("/api/auth")
 @Validated
 public class AuthController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+
+    /**
+     * 构造器注入
+     *
+     * @param userService 用户服务
+     */
+    public AuthController(UserService userService) {
+        this.userService = userService;
+    }
 
     /**
      * 用户登录

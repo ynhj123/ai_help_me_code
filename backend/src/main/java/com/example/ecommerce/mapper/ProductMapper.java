@@ -1,7 +1,8 @@
 package com.example.ecommerce.mapper;
 
 import com.example.ecommerce.entity.Product;
-import org.apache.ibatis.annotations.*;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -17,13 +18,6 @@ public interface ProductMapper {
      * @param product 商品
      * @return 影响行数
      */
-    @Insert({
-        "<script>",
-        "INSERT INTO products (name, description, category_id, price, market_price, cost_price, sku, barcode, image, gallery, detail, status, created_at, updated_at)",
-        "VALUES (#{name}, #{description}, #{categoryId}, #{price}, #{marketPrice}, #{costPrice}, #{sku}, #{barcode}, #{image}, #{gallery}, #{detail}, #{status}, #{createdAt}, #{updatedAt})",
-        "</script>"
-    })
-    @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(Product product);
 
     /**
@@ -32,7 +26,6 @@ public interface ProductMapper {
      * @param id 商品ID
      * @return 商品
      */
-    @Select("SELECT * FROM products WHERE id = #{id}")
     Product selectById(Long id);
 
     /**
@@ -41,7 +34,6 @@ public interface ProductMapper {
      * @param sku SKU
      * @return 商品
      */
-    @Select("SELECT * FROM products WHERE sku = #{sku}")
     Product selectBySku(String sku);
 
     /**
@@ -49,16 +41,14 @@ public interface ProductMapper {
      *
      * @param offset 偏移量
      * @param limit  限制数量
+     * @param name 商品名称
+     * @param categoryId 分类ID
+     * @param sku SKU
+     * @param status 状态
+     * @param sortBy 排序字段
+     * @param sortOrder 排序方式
      * @return 商品列表
      */
-    @Select("<script>" +
-            "SELECT * FROM products WHERE 1=1 " +
-            "<if test='name != null and name != \"\"'>AND name LIKE CONCAT('%', #{name}, '%')</if>" +
-            "<if test='categoryId != null'>AND category_id = #{categoryId}</if>" +
-            "<if test='sku != null and sku != \"\"'>AND sku = #{sku}</if>" +
-            "<if test='status != null'>AND status = #{status}</if>" +
-            "ORDER BY ${sortBy} ${sortOrder} LIMIT #{offset}, #{limit}" +
-            "</script>")
     List<Product> selectAll(@Param("offset") int offset, @Param("limit") int limit, 
                            @Param("name") String name, @Param("categoryId") Long categoryId,
                            @Param("sku") String sku, @Param("status") Integer status,
@@ -73,13 +63,6 @@ public interface ProductMapper {
      * @param status 状态
      * @return 总数
      */
-    @Select("<script>" +
-            "SELECT COUNT(*) FROM products WHERE 1=1 " +
-            "<if test='name != null and name != \"\"'>AND name LIKE CONCAT('%', #{name}, '%')</if>" +
-            "<if test='categoryId != null'>AND category_id = #{categoryId}</if>" +
-            "<if test='sku != null and sku != \"\"'>AND sku = #{sku}</if>" +
-            "<if test='status != null'>AND status = #{status}</if>" +
-            "</script>")
     int count(@Param("name") String name, @Param("categoryId") Long categoryId,
               @Param("sku") String sku, @Param("status") Integer status);
 
@@ -89,27 +72,6 @@ public interface ProductMapper {
      * @param product 商品
      * @return 影响行数
      */
-    @Update({
-        "<script>",
-        "UPDATE products",
-        "<set>",
-        "<if test='name != null'>name = #{name},</if>",
-        "<if test='description != null'>description = #{description},</if>",
-        "<if test='categoryId != null'>category_id = #{categoryId},</if>",
-        "<if test='price != null'>price = #{price},</if>",
-        "<if test='marketPrice != null'>market_price = #{marketPrice},</if>",
-        "<if test='costPrice != null'>cost_price = #{costPrice},</if>",
-        "<if test='sku != null'>sku = #{sku},</if>",
-        "<if test='barcode != null'>barcode = #{barcode},</if>",
-        "<if test='image != null'>image = #{image},</if>",
-        "<if test='gallery != null'>gallery = #{gallery},</if>",
-        "<if test='detail != null'>detail = #{detail},</if>",
-        "<if test='status != null'>status = #{status},</if>",
-        "updated_at = #{updatedAt}",
-        "</set>",
-        "WHERE id = #{id}",
-        "</script>"
-    })
     int update(Product product);
 
     /**
@@ -118,7 +80,6 @@ public interface ProductMapper {
      * @param id 商品ID
      * @return 影响行数
      */
-    @Delete("DELETE FROM products WHERE id = #{id}")
     int deleteById(Long id);
 
     /**
@@ -127,6 +88,5 @@ public interface ProductMapper {
      * @param categoryId 分类ID
      * @return 商品数量
      */
-    @Select("SELECT COUNT(*) FROM products WHERE category_id = #{categoryId}")
     int countByCategoryId(Long categoryId);
 }

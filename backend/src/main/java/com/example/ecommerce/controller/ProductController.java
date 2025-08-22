@@ -5,7 +5,6 @@ import com.example.ecommerce.dto.ProductQueryRequest;
 import com.example.ecommerce.entity.ProductInventory;
 import com.example.ecommerce.service.ProductService;
 import com.example.ecommerce.vo.ResultVO;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -15,14 +14,23 @@ import java.util.List;
 
 /**
  * 商品控制器
+ * 使用构造器注入依赖，避免@Autowired字段注入
  */
 @RestController
 @RequestMapping("/api/products")
 @Validated
 public class ProductController {
 
-    @Autowired
-    private ProductService productService;
+    private final ProductService productService;
+
+    /**
+     * 构造器注入
+     *
+     * @param productService 商品服务
+     */
+    public ProductController(ProductService productService) {
+        this.productService = productService;
+    }
 
     /**
      * 获取商品列表

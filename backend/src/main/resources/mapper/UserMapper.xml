@@ -11,8 +11,8 @@
         <result column="phone" property="phone"/>
         <result column="nickname" property="nickname"/>
         <result column="avatar" property="avatar"/>
-        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
-        <result column="role" property="role" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result column="status" property="status" javaType="com.example.ecommerce.enums.UserStatus"/>
+        <result column="role" property="role" javaType="com.example.ecommerce.enums.UserRole"/>
         <result column="created_at" property="createdAt"/>
         <result column="updated_at" property="updatedAt"/>
     </resultMap>

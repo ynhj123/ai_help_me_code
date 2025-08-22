@@ -15,7 +15,7 @@
         <result column="subtotal" property="subtotal"/>
         <result column="category_id" property="categoryId"/>
         <result column="category_name" property="categoryName"/>
-        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result column="status" property="status" javaType="com.example.ecommerce.enums.CartStatus"/>
         <result column="selected" property="selected"/>
         <result column="created_at" property="createdAt"/>
         <result column="updated_at" property="updatedAt"/>

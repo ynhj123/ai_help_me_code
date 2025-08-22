@@ -15,9 +15,6 @@ public interface ProductInventoryMapper {
      * @param inventory 商品库存
      * @return 影响行数
      */
-    @Insert("INSERT INTO product_inventory (product_id, quantity, reserved_quantity, created_at, updated_at) " +
-            "VALUES (#{productId}, #{quantity}, #{reservedQuantity}, #{createdAt}, #{updatedAt})")
-    @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(ProductInventory inventory);
 
     /**
@@ -26,7 +23,6 @@ public interface ProductInventoryMapper {
      * @param productId 商品ID
      * @return 商品库存
      */
-    @Select("SELECT * FROM product_inventory WHERE product_id = #{productId}")
     ProductInventory selectByProductId(Long productId);
 
     /**
@@ -35,8 +31,6 @@ public interface ProductInventoryMapper {
      * @param inventory 商品库存
      * @return 影响行数
      */
-    @Update("UPDATE product_inventory SET quantity = #{quantity}, reserved_quantity = #{reservedQuantity}, updated_at = #{updatedAt} " +
-            "WHERE product_id = #{productId}")
     int update(ProductInventory inventory);
 
     /**
@@ -46,7 +40,6 @@ public interface ProductInventoryMapper {
      * @param quantity 库存数量
      * @return 影响行数
      */
-    @Update("UPDATE product_inventory SET quantity = #{quantity}, updated_at = NOW() WHERE product_id = #{productId}")
     int updateQuantity(@Param("productId") Long productId, @Param("quantity") Integer quantity);
 
     /**
@@ -56,7 +49,6 @@ public interface ProductInventoryMapper {
      * @param quantity 增加数量
      * @return 影响行数
      */
-    @Update("UPDATE product_inventory SET quantity = quantity + #{quantity}, updated_at = NOW() WHERE product_id = #{productId}")
     int increaseQuantity(@Param("productId") Long productId, @Param("quantity") Integer quantity);
 
     /**
@@ -66,7 +58,6 @@ public interface ProductInventoryMapper {
      * @param quantity 减少数量
      * @return 影响行数
      */
-    @Update("UPDATE product_inventory SET quantity = quantity - #{quantity}, updated_at = NOW() WHERE product_id = #{productId} AND quantity >= #{quantity}")
     int decreaseQuantity(@Param("productId") Long productId, @Param("quantity") Integer quantity);
 
     /**
@@ -76,7 +67,6 @@ public interface ProductInventoryMapper {
      * @param reservedQuantity 预留库存数量
      * @return 影响行数
      */
-    @Update("UPDATE product_inventory SET reserved_quantity = #{reservedQuantity}, updated_at = NOW() WHERE product_id = #{productId}")
     int updateReservedQuantity(@Param("productId") Long productId, @Param("reservedQuantity") Integer reservedQuantity);
 
     /**
@@ -85,6 +75,5 @@ public interface ProductInventoryMapper {
      * @param productId 商品ID
      * @return 影响行数
      */
-    @Delete("DELETE FROM product_inventory WHERE product_id = #{productId}")
     int deleteByProductId(Long productId);
 }

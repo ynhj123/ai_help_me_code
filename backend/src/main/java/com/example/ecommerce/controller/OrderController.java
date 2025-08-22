@@ -5,7 +5,6 @@ import com.example.ecommerce.dto.OrderItemDTO;
 import com.example.ecommerce.dto.OrderQueryRequest;
 import com.example.ecommerce.service.OrderService;
 import com.example.ecommerce.vo.ResultVO;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,14 +17,23 @@ import java.util.List;
 
 /**
  * 订单控制器
+ * 使用构造器注入依赖，避免@Autowired字段注入
  */
 @RestController
 @RequestMapping("/api/orders")
 @Validated
 public class OrderController {
 
-    @Autowired
-    private OrderService orderService;
+    private final OrderService orderService;
+
+    /**
+     * 构造器注入
+     *
+     * @param orderService 订单服务
+     */
+    public OrderController(OrderService orderService) {
+        this.orderService = orderService;
+    }
 
     /**
      * 创建订单

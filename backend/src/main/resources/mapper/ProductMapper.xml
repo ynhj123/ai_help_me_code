@@ -16,7 +16,7 @@
         <result column="image" property="image"/>
         <result column="gallery" property="gallery"/>
         <result column="detail" property="detail"/>
-        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result column="status" property="status" javaType="com.example.ecommerce.enums.ProductStatus"/>
         <result column="created_at" property="createdAt"/>
         <result column="updated_at" property="updatedAt"/>
     </resultMap>
@@ -187,8 +187,8 @@
         )
         ORDER BY 
             CASE 
-                WHEN name LIKE CONCAT('#{keyword}', '%') THEN 1
-                WHEN name LIKE CONCAT('%', '#{keyword}', '%') THEN 2
+                WHEN name LIKE CONCAT(#{keyword}, '%') THEN 1
+                WHEN name LIKE CONCAT('%', #{keyword}, '%') THEN 2
                 ELSE 3
             END,
             id DESC

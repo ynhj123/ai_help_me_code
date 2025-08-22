@@ -3,7 +3,6 @@ package com.example.ecommerce.controller;
 import com.example.ecommerce.dto.CartDTO;
 import com.example.ecommerce.service.CartService;
 import com.example.ecommerce.vo.ResultVO;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,14 +16,23 @@ import java.util.List;
 
 /**
  * 购物车控制器
+ * 使用构造器注入依赖，避免@Autowired字段注入
  */
 @RestController
 @RequestMapping("/api/cart")
 @Validated
 public class CartController {
 
-    @Autowired
-    private CartService cartService;
+    private final CartService cartService;
+
+    /**
+     * 构造器注入
+     *
+     * @param cartService 购物车服务
+     */
+    public CartController(CartService cartService) {
+        this.cartService = cartService;
+    }
 
     /**
      * 添加商品到购物车
