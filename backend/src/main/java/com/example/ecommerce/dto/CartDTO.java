@@ -1,6 +1,7 @@
 package com.example.ecommerce.dto;
 
 import com.example.ecommerce.enums.CartStatus;
+import lombok.Data;
 
 import jakarta.validation.constraints.*;
 import java.math.BigDecimal;

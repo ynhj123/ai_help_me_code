@@ -59,24 +59,23 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             // 禁用CSRF
-            .csrf().disable()
+            .csrf(csrf -> csrf.disable())
             
             // 禁用Session
-            .sessionManagement()
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            .and()
+            .sessionManagement(session -> 
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             
             // 配置权限
-            .authorizeHttpRequests()
-            // 公开接口
-            .requestMatchers("/api/auth/**").permitAll()
-            // 静态资源
-            .requestMatchers("/static/**", "/favicon.ico").permitAll()
-            // Swagger相关
-            .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-            // 其他接口需要认证
-            .anyRequest().authenticated()
-            .and()
+            .authorizeHttpRequests(auth -> auth
+                // 公开接口
+                .requestMatchers("/api/auth/**").permitAll()
+                // 静态资源
+                .requestMatchers("/static/**", "/favicon.ico").permitAll()
+                // Swagger相关
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                // 其他接口需要认证
+                .anyRequest().authenticated()
+            )
             
             // 添加JWT过滤器
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
