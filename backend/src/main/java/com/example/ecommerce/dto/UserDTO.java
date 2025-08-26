@@ -44,6 +44,7 @@ public class UserDTO {
      * 昵称
      */
     private String nickname;
+    private String password;
 
     /**
      * 头像

@@ -1,6 +1,7 @@
 package com.example.ecommerce.config;
 
 import com.example.ecommerce.entity.User;
+import com.example.ecommerce.enums.UserStatus;
 import com.example.ecommerce.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
@@ -32,18 +33,18 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
         // 构造权限列表
         List<GrantedAuthority> authorities = Collections.singletonList(
-            new SimpleGrantedAuthority("ROLE_" + user.getRole().name())
+                new SimpleGrantedAuthority("ROLE_" + user.getRole().name())
         );
 
         // 返回UserDetails
         return org.springframework.security.core.userdetails.User.builder()
-            .username(user.getUsername())
-            .password(user.getPassword())
-            .authorities(authorities)
-            .accountExpired(false)
-            .accountLocked(false)
-            .credentialsExpired(false)
-            .disabled(user.getStatus() == com.example.ecommerce.enums.UserStatus.INACTIVE)
-            .build();
+                .username(user.getUsername())
+                .password(user.getPassword())
+                .authorities(authorities)
+                .accountExpired(false)
+                .accountLocked(false)
+                .credentialsExpired(false)
+                .disabled(user.getStatus() == UserStatus.DISABLED)
+                .build();
     }
 }
