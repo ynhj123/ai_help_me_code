@@ -7,20 +7,13 @@ spring:
   profiles:
     active: dev
   datasource:
-    url: jdbc:mysql://localhost:3306/ecommerce?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://localhost:3306/ecommerce?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&rewriteBatchedStatements=true
     username: root
-    password: root
+    password: root123
     driver-class-name: com.mysql.cj.jdbc.Driver
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MySQL8Dialect
   sql:
     init:
-      mode: always
+      mode: NEVER
       schema-locations: classpath:db/schema.sql
 
 mybatis:
