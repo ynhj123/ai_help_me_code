@@ -229,7 +229,7 @@
         FROM products p
         LEFT JOIN product_inventory pi ON p.id = pi.product_id
         WHERE p.status = 1
-        AND pi.quantity <= #{threshold}
+        AND pi.quantity &lt;= #{threshold}
         ORDER BY pi.quantity ASC
         LIMIT #{offset}, #{limit}
     </select>
@@ -240,7 +240,7 @@
         FROM products p
         LEFT JOIN product_inventory pi ON p.id = pi.product_id
         WHERE p.status = 1
-        AND pi.quantity <= #{threshold}
+        AND pi.quantity &lt;= #{threshold}
     </select>
 
     <!-- 查询商品统计信息 -->
@@ -257,13 +257,12 @@
 
     <!-- 查询商品分类统计 -->
     <select id="findProductCategoryStats" resultType="map">
-        SELECT 
-            c.id as category_id,
-            c.name as category_name,
-            COUNT(p.id) as product_count,
-            AVG(p.price) as average_price
+        SELECT c.id         as category_id,
+               c.name       as category_name,
+               COUNT(p.id)  as product_count,
+               AVG(p.price) as average_price
         FROM categories c
-        LEFT JOIN products p ON c.id = p.category_id AND p.status = 1
+                 LEFT JOIN products p ON c.id = p.category_id AND p.status = 1
         GROUP BY c.id, c.name
         ORDER BY product_count DESC
     </select>
@@ -272,7 +271,7 @@
     <select id="findPriceDistribution" resultType="map">
         SELECT 
             CASE 
-                WHEN price < 50 THEN '0-50'
+                WHEN price &lt; 50 THEN '0-50'
                 WHEN price BETWEEN 50 AND 100 THEN '50-100'
                 WHEN price BETWEEN 100 AND 200 THEN '100-200'
                 WHEN price BETWEEN 200 AND 500 THEN '200-500'

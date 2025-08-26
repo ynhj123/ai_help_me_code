@@ -77,10 +77,10 @@
             AND payment_method = #{paymentMethod}
         </if>
         <if test="startTime != null">
-            AND created_at >= #{startTime}
+            AND created_at &gt;= #{startTime}
         </if>
         <if test="endTime != null">
-            AND created_at <= #{endTime}
+            AND created_at &lt;= #{endTime}
         </if>
         ORDER BY ${sortBy} ${sortOrder}
         LIMIT #{offset}, #{limit}
@@ -102,10 +102,10 @@
             AND payment_method = #{paymentMethod}
         </if>
         <if test="startTime != null">
-            AND created_at >= #{startTime}
+            AND created_at &gt;= #{startTime}
         </if>
         <if test="endTime != null">
-            AND created_at <= #{endTime}
+            AND created_at &lt;= #{endTime}
         </if>
     </select>
 

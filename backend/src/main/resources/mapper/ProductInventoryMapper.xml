@@ -54,22 +54,22 @@
             AND product_id = #{productId}
         </if>
         <if test="minQuantity != null">
-            AND quantity >= #{minQuantity}
+            AND quantity &gt;= #{minQuantity}
         </if>
         <if test="maxQuantity != null">
-            AND quantity <= #{maxQuantity}
+            AND quantity &lt;= #{maxQuantity}
         </if>
         <if test="minReservedQuantity != null">
             AND reserved_quantity >= #{minReservedQuantity}
         </if>
         <if test="maxReservedQuantity != null">
-            AND reserved_quantity <= #{maxReservedQuantity}
+            AND reserved_quantity &lt;= #{maxReservedQuantity}
         </if>
         <if test="startTime != null">
-            AND created_at >= #{startTime}
+            AND created_at &gt;= #{startTime}
         </if>
         <if test="endTime != null">
-            AND created_at <= #{endTime}
+            AND created_at &lt;= #{endTime}
         </if>
         ORDER BY id DESC
         LIMIT #{offset}, #{limit}
@@ -82,22 +82,22 @@
             AND product_id = #{productId}
         </if>
         <if test="minQuantity != null">
-            AND quantity >= #{minQuantity}
+            AND quantity &gt;= #{minQuantity}
         </if>
         <if test="maxQuantity != null">
-            AND quantity <= #{maxQuantity}
+            AND quantity &lt;= #{maxQuantity}
         </if>
         <if test="minReservedQuantity != null">
-            AND reserved_quantity >= #{minReservedQuantity}
+            AND reserved_quantity &gt;= #{minReservedQuantity}
         </if>
         <if test="maxReservedQuantity != null">
-            AND reserved_quantity <= #{maxReservedQuantity}
+            AND reserved_quantity &lt;= #{maxReservedQuantity}
         </if>
         <if test="startTime != null">
-            AND created_at >= #{startTime}
+            AND created_at &gt;= #{startTime}
         </if>
         <if test="endTime != null">
-            AND created_at <= #{endTime}
+            AND created_at &lt;= #{endTime}
         </if>
     </select>
 
@@ -240,7 +240,7 @@
     <select id="findInventoryDistribution" resultType="map">
         SELECT 
             CASE 
-                WHEN quantity < 10 THEN '0-10'
+                WHEN quantity &lt; 10 THEN '0-10'
                 WHEN quantity BETWEEN 10 AND 50 THEN '10-50'
                 WHEN quantity BETWEEN 50 AND 100 THEN '50-100'
                 WHEN quantity BETWEEN 100 AND 500 THEN '100-500'
@@ -296,7 +296,7 @@
     <select id="findAvailableInventoryDistribution" resultType="map">
         SELECT 
             CASE 
-                WHEN quantity - reserved_quantity < 0 THEN '负库存'
+                WHEN quantity - reserved_quantity &lt; 0 THEN '负库存'
                 WHEN quantity - reserved_quantity = 0 THEN '0'
                 WHEN quantity - reserved_quantity BETWEEN 1 AND 10 THEN '1-10'
                 WHEN quantity - reserved_quantity BETWEEN 11 AND 50 THEN '11-50'
@@ -327,14 +327,14 @@
         SELECT pi.*, p.name as product_name, p.sku as product_sku
         FROM product_inventory pi
         INNER JOIN products p ON pi.product_id = p.id
-        WHERE pi.quantity <= #{threshold}
+        WHERE pi.quantity &lt;= #{threshold}
         ORDER BY pi.quantity ASC
         LIMIT #{offset}, #{limit}
     </select>
 
     <!-- 查询低库存商品数量 -->
     <select id="countLowStockProducts" resultType="int">
-        SELECT COUNT(*) FROM product_inventory WHERE quantity <= #{threshold}
+        SELECT COUNT(*) FROM product_inventory WHERE quantity &lt;= #{threshold}
     </select>
 
     <!-- 查询无库存商品 -->
@@ -357,14 +357,14 @@
         SELECT pi.*, p.name as product_name, p.sku as product_sku
         FROM product_inventory pi
         INNER JOIN products p ON pi.product_id = p.id
-        WHERE pi.quantity < pi.reserved_quantity
+        WHERE pi.quantity &lt; pi.reserved_quantity
         ORDER BY (pi.quantity - pi.reserved_quantity) ASC
         LIMIT #{offset}, #{limit}
     </select>
 
     <!-- 查询负库存商品数量 -->
     <select id="countNegativeStockProducts" resultType="int">
-        SELECT COUNT(*) FROM product_inventory WHERE quantity < reserved_quantity
+        SELECT COUNT(*) FROM product_inventory WHERE quantity &lt; reserved_quantity
     </select>
 
     <!-- 查询高库存商品 -->
@@ -393,9 +393,9 @@
             AVG(reserved_quantity) as average_reserved_quantity,
             AVG(quantity - reserved_quantity) as average_available_quantity,
             COUNT(CASE WHEN quantity = 0 THEN 1 END) as out_of_stock_products,
-            COUNT(CASE WHEN quantity < 10 THEN 1 END) as low_stock_products,
-            COUNT(CASE WHEN quantity > 1000 THEN 1 END) as high_stock_products,
-            COUNT(CASE WHEN quantity < reserved_quantity THEN 1 END) as negative_stock_products
+            COUNT(CASE WHEN quantity &lt; 10 THEN 1 END) as low_stock_products,
+            COUNT(CASE WHEN quantity &gt; 1000 THEN 1 END) as high_stock_products,
+            COUNT(CASE WHEN quantity &lt; reserved_quantity THEN 1 END) as negative_stock_products
         FROM product_inventory
     </select>
 
@@ -407,11 +407,11 @@
             SUM(reserved_quantity) as total_reserved_quantity,
             SUM(quantity - reserved_quantity) as total_available_quantity,
             COUNT(CASE WHEN quantity = 0 THEN 1 END) as out_of_stock_count,
-            COUNT(CASE WHEN quantity < 10 THEN 1 END) as low_stock_count,
-            COUNT(CASE WHEN quantity < reserved_quantity THEN 1 END) as negative_stock_count,
+            COUNT(CASE WHEN quantity &lt; 10 THEN 1 END) as low_stock_count,
+            COUNT(CASE WHEN quantity &lt; reserved_quantity THEN 1 END) as negative_stock_count,
             ROUND(COUNT(CASE WHEN quantity = 0 THEN 1 END) * 100.0 / COUNT(*), 2) as out_of_stock_percentage,
-            ROUND(COUNT(CASE WHEN quantity < 10 THEN 1 END) * 100.0 / COUNT(*), 2) as low_stock_percentage,
-            ROUND(COUNT(CASE WHEN quantity < reserved_quantity THEN 1 END) * 100.0 / COUNT(*), 2) as negative_stock_percentage
+            ROUND(COUNT(CASE WHEN quantity &lt; 10 THEN 1 END) * 100.0 / COUNT(*), 2) as low_stock_percentage,
+            ROUND(COUNT(CASE WHEN quantity &lt; reserved_quantity THEN 1 END) * 100.0 / COUNT(*), 2) as negative_stock_percentage
         FROM product_inventory
     </select>
 
@@ -445,19 +445,18 @@
 
     <!-- 查询库存分类统计 -->
     <select id="findInventoryCategoryStats" resultType="map">
-        SELECT 
-            c.id as category_id,
-            c.name as category_name,
-            COUNT(pi.id) as product_count,
-            SUM(pi.quantity) as total_quantity,
-            SUM(pi.reserved_quantity) as total_reserved_quantity,
-            SUM(pi.quantity - pi.reserved_quantity) as total_available_quantity,
-            AVG(pi.quantity) as average_quantity,
-            AVG(pi.reserved_quantity) as average_reserved_quantity,
-            AVG(pi.quantity - pi.reserved_quantity) as average_available_quantity
+        SELECT c.id                                    as category_id,
+               c.name                                  as category_name,
+               COUNT(pi.id)                            as product_count,
+               SUM(pi.quantity)                        as total_quantity,
+               SUM(pi.reserved_quantity)               as total_reserved_quantity,
+               SUM(pi.quantity - pi.reserved_quantity) as total_available_quantity,
+               AVG(pi.quantity)                        as average_quantity,
+               AVG(pi.reserved_quantity)               as average_reserved_quantity,
+               AVG(pi.quantity - pi.reserved_quantity) as average_available_quantity
         FROM product_inventory pi
-        INNER JOIN products p ON pi.product_id = p.id
-        INNER JOIN categories c ON p.category_id = c.id
+                 INNER JOIN products p ON pi.product_id = p.id
+                 INNER JOIN categories c ON p.category_id = c.id
         GROUP BY c.id, c.name
         ORDER BY total_quantity DESC
     </select>
@@ -540,13 +539,13 @@
             MIN(quantity - reserved_quantity) as min_available_quantity,
             MAX(quantity - reserved_quantity) as max_available_quantity,
             COUNT(CASE WHEN quantity = 0 THEN 1 END) as out_of_stock_products,
-            COUNT(CASE WHEN quantity < 10 THEN 1 END) as low_stock_products,
-            COUNT(CASE WHEN quantity > 1000 THEN 1 END) as high_stock_products,
-            COUNT(CASE WHEN quantity < reserved_quantity THEN 1 END) as negative_stock_products,
+            COUNT(CASE WHEN quantity &lt; 10 THEN 1 END) as low_stock_products,
+            COUNT(CASE WHEN quantity &gt; 1000 THEN 1 END) as high_stock_products,
+            COUNT(CASE WHEN quantity &lt; reserved_quantity THEN 1 END) as negative_stock_products,
             ROUND(COUNT(CASE WHEN quantity = 0 THEN 1 END) * 100.0 / COUNT(*), 2) as out_of_stock_percentage,
-            ROUND(COUNT(CASE WHEN quantity < 10 THEN 1 END) * 100.0 / COUNT(*), 2) as low_stock_percentage,
-            ROUND(COUNT(CASE WHEN quantity > 1000 THEN 1 END) * 100.0 / COUNT(*), 2) as high_stock_percentage,
-            ROUND(COUNT(CASE WHEN quantity < reserved_quantity THEN 1 END) * 100.0 / COUNT(*), 2) as negative_stock_percentage
+            ROUND(COUNT(CASE WHEN quantity &lt; 10 THEN 1 END) * 100.0 / COUNT(*), 2) as low_stock_percentage,
+            ROUND(COUNT(CASE WHEN quantity &gt; 1000 THEN 1 END) * 100.0 / COUNT(*), 2) as high_stock_percentage,
+            ROUND(COUNT(CASE WHEN quantity &lt; reserved_quantity THEN 1 END) * 100.0 / COUNT(*), 2) as negative_stock_percentage
         FROM product_inventory
     </select>
 
