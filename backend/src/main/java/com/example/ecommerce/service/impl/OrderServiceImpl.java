@@ -42,7 +42,7 @@ public class OrderServiceImpl implements OrderService {
         orderDTO.setOrderNo(orderNo);
 
         // 计算订单总金额
-        BigDecimal totalAmount = calculateOrderAmount(orderDTO.getOrderItems(), 
+        BigDecimal totalAmount = calculateOrderAmount(orderDTO.getOrderItems(),
                 orderDTO.getShippingFee(), orderDTO.getDiscountAmount());
         orderDTO.setTotalAmount(totalAmount);
         orderDTO.setProductAmount(orderDTO.getOrderItems().stream()
@@ -51,7 +51,7 @@ public class OrderServiceImpl implements OrderService {
         orderDTO.setPaidAmount(totalAmount);
 
         // 设置订单状态为待付款
-        orderDTO.setStatus(OrderStatus.PENDING_PAYMENT.getCode());
+        orderDTO.setStatus(OrderStatus.PENDING_PAYMENT);
         orderDTO.setCreatedAt(LocalDateTime.now());
         orderDTO.setUpdatedAt(LocalDateTime.now());
 
@@ -227,7 +227,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // 更新订单
-        BeanUtils.copyProperties(orderDTO, order, "id", "orderNo", "userId", "status", 
+        BeanUtils.copyProperties(orderDTO, order, "id", "orderNo", "userId", "status",
                 "createdAt", "paidAt", "shippedAt", "completedAt", "cancelledAt");
         order.setUpdatedAt(LocalDateTime.now());
         orderMapper.update(order);
@@ -264,12 +264,12 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // 检查订单状态是否可以取消
-        if (!canBeCancelled(order.getStatus())) {
+        if (!canBeCancelled(order.getStatus().getCode())) {
             throw new BusinessException(400, "订单状态不允许取消");
         }
 
         // 更新订单状态
-        order.setStatus(OrderStatus.CANCELLED.getCode());
+        order.setStatus(OrderStatus.CANCELLED);
         order.setCancelledAt(LocalDateTime.now());
         order.setCancelReason(cancelReason);
         order.setUpdatedAt(LocalDateTime.now());
@@ -291,13 +291,13 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // 检查订单状态是否可以支付
-        if (!canBePaid(order.getStatus())) {
+        if (!canBePaid(order.getStatus().getCode())) {
             throw new BusinessException(400, "订单状态不允许支付");
         }
 
         // 更新订单状态
         LocalDateTime paidAt = LocalDateTime.now();
-        order.setStatus(OrderStatus.PAID.getCode());
+        order.setStatus(OrderStatus.PAID);
         order.setPaidAt(paidAt);
         order.setUpdatedAt(LocalDateTime.now());
         orderMapper.updatePaymentStatus(id, paidAt, OrderStatus.PAID.getCode());
@@ -318,13 +318,13 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // 检查订单状态是否可以发货
-        if (!canBeShipped(order.getStatus())) {
+        if (!canBeShipped(order.getStatus().getCode())) {
             throw new BusinessException(400, "订单状态不允许发货");
         }
 
         // 更新订单状态
         LocalDateTime shippedAt = LocalDateTime.now();
-        order.setStatus(OrderStatus.SHIPPED.getCode());
+        order.setStatus(OrderStatus.SHIPPED);
         order.setLogisticsCompany(logisticsCompany);
         order.setTrackingNumber(trackingNumber);
         order.setShippedAt(shippedAt);
@@ -347,13 +347,13 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // 检查订单状态是否可以确认收货
-        if (!canBeConfirmed(order.getStatus())) {
+        if (!canBeConfirmed(order.getStatus().getCode())) {
             throw new BusinessException(400, "订单状态不允许确认收货");
         }
 
         // 更新订单状态
         LocalDateTime completedAt = LocalDateTime.now();
-        order.setStatus(OrderStatus.COMPLETED.getCode());
+        order.setStatus(OrderStatus.COMPLETED);
         order.setCompletedAt(completedAt);
         order.setUpdatedAt(LocalDateTime.now());
         orderMapper.updateCompletedStatus(id, completedAt, OrderStatus.COMPLETED.getCode());
@@ -366,7 +366,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public OrderDTO updateOrderStatus(Long id, Integer status) {
+    public OrderDTO updateOrderStatus(Long id, OrderStatus status) {
         // 查询订单
         Order order = orderMapper.selectById(id);
         if (order == null) {
@@ -376,7 +376,7 @@ public class OrderServiceImpl implements OrderService {
         // 更新订单状态
         order.setStatus(status);
         order.setUpdatedAt(LocalDateTime.now());
-        orderMapper.updateStatus(id, status);
+        orderMapper.updateStatus(id, status.getCode());
 
         // 转换为DTO
         OrderDTO orderDTO = new OrderDTO();
@@ -386,7 +386,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public OrderDTO updatePaymentStatus(Long id, LocalDateTime paidAt, Integer status) {
+    public OrderDTO updatePaymentStatus(Long id, LocalDateTime paidAt, OrderStatus status) {
         // 查询订单
         Order order = orderMapper.selectById(id);
         if (order == null) {
@@ -397,7 +397,7 @@ public class OrderServiceImpl implements OrderService {
         order.setPaidAt(paidAt);
         order.setStatus(status);
         order.setUpdatedAt(LocalDateTime.now());
-        orderMapper.updatePaymentStatus(id, paidAt, status);
+        orderMapper.updatePaymentStatus(id, paidAt, status.getCode());
 
         // 转换为DTO
         OrderDTO orderDTO = new OrderDTO();
@@ -407,8 +407,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public OrderDTO updateShippingStatus(Long id, String logisticsCompany, String trackingNumber, 
-                                       LocalDateTime shippedAt, Integer status) {
+    public OrderDTO updateShippingStatus(Long id, String logisticsCompany, String trackingNumber,
+                                         LocalDateTime shippedAt, OrderStatus status) {
         // 查询订单
         Order order = orderMapper.selectById(id);
         if (order == null) {
@@ -421,7 +421,7 @@ public class OrderServiceImpl implements OrderService {
         order.setShippedAt(shippedAt);
         order.setStatus(status);
         order.setUpdatedAt(LocalDateTime.now());
-        orderMapper.updateShippingStatus(id, logisticsCompany, trackingNumber, shippedAt, status);
+        orderMapper.updateShippingStatus(id, logisticsCompany, trackingNumber, shippedAt, status.getCode());
 
         // 转换为DTO
         OrderDTO orderDTO = new OrderDTO();
@@ -431,7 +431,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public OrderDTO updateCompletedStatus(Long id, LocalDateTime completedAt, Integer status) {
+    public OrderDTO updateCompletedStatus(Long id, LocalDateTime completedAt, OrderStatus status) {
         // 查询订单
         Order order = orderMapper.selectById(id);
         if (order == null) {
@@ -442,7 +442,7 @@ public class OrderServiceImpl implements OrderService {
         order.setCompletedAt(completedAt);
         order.setStatus(status);
         order.setUpdatedAt(LocalDateTime.now());
-        orderMapper.updateCompletedStatus(id, completedAt, status);
+        orderMapper.updateCompletedStatus(id, completedAt, status.getCode());
 
         // 转换为DTO
         OrderDTO orderDTO = new OrderDTO();
@@ -452,7 +452,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public OrderDTO updateCancelledStatus(Long id, LocalDateTime cancelledAt, String cancelReason, Integer status) {
+    public OrderDTO updateCancelledStatus(Long id, LocalDateTime cancelledAt, String cancelReason, OrderStatus status) {
         // 查询订单
         Order order = orderMapper.selectById(id);
         if (order == null) {
@@ -464,7 +464,7 @@ public class OrderServiceImpl implements OrderService {
         order.setCancelReason(cancelReason);
         order.setStatus(status);
         order.setUpdatedAt(LocalDateTime.now());
-        orderMapper.updateCancelledStatus(id, cancelledAt, cancelReason, status);
+        orderMapper.updateCancelledStatus(id, cancelledAt, cancelReason, status.getCode());
 
         // 转换为DTO
         OrderDTO orderDTO = new OrderDTO();
@@ -477,7 +477,7 @@ public class OrderServiceImpl implements OrderService {
         // 生成订单编号：日期 + 时间 + 随机数
         String date = java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd").format(LocalDateTime.now());
         String time = java.time.format.DateTimeFormatter.ofPattern("HHmmss").format(LocalDateTime.now());
-        String random = String.format("%04d", (int)(Math.random() * 10000));
+        String random = String.format("%04d", (int) (Math.random() * 10000));
         return "ORD" + date + time + random;
     }
 
@@ -486,7 +486,7 @@ public class OrderServiceImpl implements OrderService {
         BigDecimal productAmount = orderItems.stream()
                 .map(OrderItemDTO::getSubtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        
+
         BigDecimal totalAmount = productAmount.add(shippingFee).subtract(discountAmount);
         return totalAmount.compareTo(BigDecimal.ZERO) > 0 ? totalAmount : BigDecimal.ZERO;
     }
@@ -509,21 +509,21 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public boolean canBeCancelled(Integer status) {
-        return OrderStatus.PENDING_PAYMENT.getCode().equals(status);
+        return OrderStatus.PENDING_PAYMENT.getCode() == (status);
     }
 
     @Override
     public boolean canBePaid(Integer status) {
-        return OrderStatus.PENDING_PAYMENT.getCode().equals(status);
+        return OrderStatus.PENDING_PAYMENT.getCode() == (status);
     }
 
     @Override
     public boolean canBeShipped(Integer status) {
-        return OrderStatus.PAID.getCode().equals(status);
+        return OrderStatus.PAID.getCode() == (status);
     }
 
     @Override
     public boolean canBeConfirmed(Integer status) {
-        return OrderStatus.SHIPPED.getCode().equals(status);
+        return OrderStatus.SHIPPED.getCode() == (status);
     }
 }

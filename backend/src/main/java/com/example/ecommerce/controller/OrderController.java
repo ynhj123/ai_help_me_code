@@ -3,6 +3,7 @@ package com.example.ecommerce.controller;
 import com.example.ecommerce.dto.OrderDTO;
 import com.example.ecommerce.dto.OrderItemDTO;
 import com.example.ecommerce.dto.OrderQueryRequest;
+import com.example.ecommerce.enums.OrderStatus;
 import com.example.ecommerce.service.OrderService;
 import com.example.ecommerce.vo.ResultVO;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -258,7 +259,7 @@ public class OrderController {
     @PutMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN')")
     public ResultVO<OrderDTO> updateOrderStatus(@PathVariable Long id, @RequestParam Integer status) {
-        OrderDTO orderDTO = orderService.updateOrderStatus(id, status);
+        OrderDTO orderDTO = orderService.updateOrderStatus(id, OrderStatus.fromCode(status));
         return ResultVO.success("订单状态更新成功", orderDTO);
     }
 
@@ -275,7 +276,7 @@ public class OrderController {
     public ResultVO<OrderDTO> updatePaymentStatus(@PathVariable Long id, 
                                                 @RequestParam java.time.LocalDateTime paidAt, 
                                                 @RequestParam Integer status) {
-        OrderDTO orderDTO = orderService.updatePaymentStatus(id, paidAt, status);
+        OrderDTO orderDTO = orderService.updatePaymentStatus(id, paidAt, OrderStatus.fromCode(status));
         return ResultVO.success("支付状态更新成功", orderDTO);
     }
 
@@ -296,7 +297,7 @@ public class OrderController {
                                                   @RequestParam String trackingNumber,
                                                   @RequestParam java.time.LocalDateTime shippedAt, 
                                                   @RequestParam Integer status) {
-        OrderDTO orderDTO = orderService.updateShippingStatus(id, logisticsCompany, trackingNumber, shippedAt, status);
+        OrderDTO orderDTO = orderService.updateShippingStatus(id, logisticsCompany, trackingNumber, shippedAt, OrderStatus.fromCode(status));
         return ResultVO.success("发货状态更新成功", orderDTO);
     }
 
@@ -313,7 +314,7 @@ public class OrderController {
     public ResultVO<OrderDTO> updateCompletedStatus(@PathVariable Long id, 
                                                    @RequestParam java.time.LocalDateTime completedAt, 
                                                    @RequestParam Integer status) {
-        OrderDTO orderDTO = orderService.updateCompletedStatus(id, completedAt, status);
+        OrderDTO orderDTO = orderService.updateCompletedStatus(id, completedAt, OrderStatus.fromCode(status));
         return ResultVO.success("完成状态更新成功", orderDTO);
     }
 
@@ -332,7 +333,7 @@ public class OrderController {
                                                    @RequestParam java.time.LocalDateTime cancelledAt, 
                                                    @RequestParam String cancelReason, 
                                                    @RequestParam Integer status) {
-        OrderDTO orderDTO = orderService.updateCancelledStatus(id, cancelledAt, cancelReason, status);
+        OrderDTO orderDTO = orderService.updateCancelledStatus(id, cancelledAt, cancelReason, OrderStatus.fromCode(status));
         return ResultVO.success("取消状态更新成功", orderDTO);
     }
 

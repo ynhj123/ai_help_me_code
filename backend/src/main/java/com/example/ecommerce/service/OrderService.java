@@ -3,6 +3,7 @@ package com.example.ecommerce.service;
 import com.example.ecommerce.dto.OrderDTO;
 import com.example.ecommerce.dto.OrderItemDTO;
 import com.example.ecommerce.dto.OrderQueryRequest;
+import com.example.ecommerce.enums.OrderStatus;
 
 import java.util.List;
 
@@ -126,7 +127,7 @@ public interface OrderService {
      * @param status 订单状态
      * @return 更新后的订单
      */
-    OrderDTO updateOrderStatus(Long id, Integer status);
+    OrderDTO updateOrderStatus(Long id, OrderStatus status);
 
     /**
      * 更新支付状态
@@ -136,7 +137,7 @@ public interface OrderService {
      * @param status 订单状态
      * @return 更新后的订单
      */
-    OrderDTO updatePaymentStatus(Long id, java.time.LocalDateTime paidAt, Integer status);
+    OrderDTO updatePaymentStatus(Long id, java.time.LocalDateTime paidAt, OrderStatus status);
 
     /**
      * 更新发货状态
@@ -149,7 +150,7 @@ public interface OrderService {
      * @return 更新后的订单
      */
     OrderDTO updateShippingStatus(Long id, String logisticsCompany, String trackingNumber, 
-                                 java.time.LocalDateTime shippedAt, Integer status);
+                                 java.time.LocalDateTime shippedAt, OrderStatus status);
 
     /**
      * 更新完成状态
@@ -159,7 +160,7 @@ public interface OrderService {
      * @param status     订单状态
      * @return 更新后的订单
      */
-    OrderDTO updateCompletedStatus(Long id, java.time.LocalDateTime completedAt, Integer status);
+    OrderDTO updateCompletedStatus(Long id, java.time.LocalDateTime completedAt, OrderStatus status);
 
     /**
      * 更新取消状态
@@ -171,7 +172,7 @@ public interface OrderService {
      * @return 更新后的订单
      */
     OrderDTO updateCancelledStatus(Long id, java.time.LocalDateTime cancelledAt, 
-                                  String cancelReason, Integer status);
+                                  String cancelReason, OrderStatus status);
 
     /**
      * 生成订单编号
